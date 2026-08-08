@@ -495,6 +495,7 @@ GameObject:
   - component: {fileID: 735926857}
   - component: {fileID: 735926856}
   - component: {fileID: 735926855}
+  - component: {fileID: 735926858}
   m_Layer: 0
   m_Name: FurnitureManager
   m_TagString: Untagged
@@ -634,6 +635,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FurnitureCatalog
   muebles:
   - {fileID: 7994256470457331996, guid: a47df7211d39c464bb467697a00016a7, type: 3}
+--- !u!114 &735926858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 735926848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1121c31a40676be40b9ceee964bf2152, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FurniturePlacementCancel
+  placement: {fileID: 735926849}
+  preview: {fileID: 735926853}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
