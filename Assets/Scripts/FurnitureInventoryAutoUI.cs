@@ -253,119 +253,120 @@ public class FurnitureInventoryAutoUI : MonoBehaviour
     }
 
     private void CrearScroll()
-    {
-        GameObject scroll =
-            CrearObjetoUI(
-                "Scroll",
-                panel.transform
-            );
+{
+    GameObject scroll =
+        CrearObjetoUI(
+            "Scroll",
+            panel.transform
+        );
 
-        RectTransform scrollRectTransform =
-            scroll.GetComponent<RectTransform>();
+    RectTransform scrollRectTransform =
+        scroll.GetComponent<RectTransform>();
 
-        scrollRectTransform.anchorMin =
-            new Vector2(0f, 0f);
+    scrollRectTransform.anchorMin =
+        new Vector2(0f, 0f);
 
-        scrollRectTransform.anchorMax =
-            new Vector2(1f, 1f);
+    scrollRectTransform.anchorMax =
+        new Vector2(1f, 1f);
 
-        scrollRectTransform.offsetMin =
-            new Vector2(20f, 20f);
+    scrollRectTransform.offsetMin =
+        new Vector2(20f, 20f);
 
-        scrollRectTransform.offsetMax =
-            new Vector2(-20f, -95f);
-
-
-        GameObject viewport =
-            CrearObjetoUI(
-                "Viewport",
-                scroll.transform
-            );
-
-        RectTransform viewportRect =
-            viewport.GetComponent<RectTransform>();
-
-        viewportRect.anchorMin = Vector2.zero;
-        viewportRect.anchorMax = Vector2.one;
-        viewportRect.offsetMin = Vector2.zero;
-        viewportRect.offsetMax = Vector2.zero;
-
-        Image viewportImage =
-            viewport.AddComponent<Image>();
-
-        viewportImage.color =
-            new Color(0f, 0f, 0f, 0f);
-
-        Mask mask =
-            viewport.AddComponent<Mask>();
-
-        mask.showMaskGraphic = false;
+    scrollRectTransform.offsetMax =
+        new Vector2(-20f, -95f);
 
 
-        GameObject contenidoObjeto =
-            CrearObjetoUI(
-                "Contenido",
-                viewport.transform
-            );
+    // VIEWPORT
+    GameObject viewport =
+        CrearObjetoUI(
+            "Viewport",
+            scroll.transform
+        );
 
-        contenido =
-            contenidoObjeto.transform;
+    RectTransform viewportRect =
+        viewport.GetComponent<RectTransform>();
 
-        RectTransform contenidoRect =
-            contenidoObjeto.GetComponent<RectTransform>();
+    viewportRect.anchorMin = Vector2.zero;
+    viewportRect.anchorMax = Vector2.one;
+    viewportRect.offsetMin = Vector2.zero;
+    viewportRect.offsetMax = Vector2.zero;
 
-        contenidoRect.anchorMin =
-            new Vector2(0f, 1f);
-
-        contenidoRect.anchorMax =
-            new Vector2(1f, 1f);
-
-        contenidoRect.pivot =
-            new Vector2(0.5f, 1f);
-
-        contenidoRect.anchoredPosition =
-            Vector2.zero;
+    // Usamos RectMask2D.
+    // No necesita una imagen transparente.
+    viewport.AddComponent<RectMask2D>();
 
 
-        GridLayoutGroup grid =
-            contenidoObjeto.AddComponent<GridLayoutGroup>();
+    // CONTENIDO
+    GameObject contenidoObjeto =
+        CrearObjetoUI(
+            "Contenido",
+            viewport.transform
+        );
 
-        grid.cellSize =
-            new Vector2(175f, 115f);
+    contenido =
+        contenidoObjeto.transform;
 
-        grid.spacing =
-            new Vector2(12f, 12f);
+    RectTransform contenidoRect =
+        contenidoObjeto.GetComponent<RectTransform>();
 
-        grid.padding =
-            new RectOffset(5, 5, 5, 5);
+    contenidoRect.anchorMin =
+        new Vector2(0f, 1f);
 
-        grid.constraint =
-            GridLayoutGroup.Constraint.FixedColumnCount;
+    contenidoRect.anchorMax =
+        new Vector2(1f, 1f);
 
-        grid.constraintCount = 4;
+    contenidoRect.pivot =
+        new Vector2(0.5f, 1f);
+
+    contenidoRect.anchoredPosition =
+        Vector2.zero;
+
+    contenidoRect.sizeDelta =
+        new Vector2(0f, 120f);
 
 
-        ContentSizeFitter fitter =
-            contenidoObjeto.AddComponent<ContentSizeFitter>();
+    // CUADRICULA
+    GridLayoutGroup grid =
+        contenidoObjeto.AddComponent<GridLayoutGroup>();
 
-        fitter.verticalFit =
-            ContentSizeFitter.FitMode.PreferredSize;
+    grid.cellSize =
+        new Vector2(175f, 115f);
+
+    grid.spacing =
+        new Vector2(12f, 12f);
+
+    grid.padding =
+        new RectOffset(5, 5, 5, 5);
+
+    grid.constraint =
+        GridLayoutGroup.Constraint.FixedColumnCount;
+
+    grid.constraintCount = 4;
 
 
-        ScrollRect scrollRect =
-            scroll.AddComponent<ScrollRect>();
+    // ALTURA AUTOMATICA
+    ContentSizeFitter fitter =
+        contenidoObjeto.AddComponent<ContentSizeFitter>();
 
-        scrollRect.viewport = viewportRect;
-        scrollRect.content = contenidoRect;
+    fitter.verticalFit =
+        ContentSizeFitter.FitMode.PreferredSize;
 
-        scrollRect.horizontal = false;
-        scrollRect.vertical = true;
 
-        scrollRect.movementType =
-            ScrollRect.MovementType.Clamped;
+    // SCROLL
+    ScrollRect scrollRect =
+        scroll.AddComponent<ScrollRect>();
 
-        scrollRect.scrollSensitivity = 25f;
-    }
+    scrollRect.viewport = viewportRect;
+    scrollRect.content = contenidoRect;
+
+    scrollRect.horizontal = false;
+    scrollRect.vertical = true;
+
+    scrollRect.movementType =
+        ScrollRect.MovementType.Clamped;
+
+    scrollRect.scrollSensitivity = 25f;
+}
 
     private void CrearTarjetas()
     {
