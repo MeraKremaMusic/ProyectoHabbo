@@ -20,12 +20,12 @@ public class FurnitureDelete : MonoBehaviour
             return;
         }
 
-        // No eliminar mientras estamos colocando/moviendo.
         if (placement.EstaColocando)
             return;
 
         if (
-            Keyboard.current.deleteKey.wasPressedThisFrame
+            Keyboard.current.deleteKey
+                .wasPressedThisFrame
         )
         {
             EliminarSeleccionado();
@@ -40,16 +40,33 @@ public class FurnitureDelete : MonoBehaviour
         if (mueble == null)
             return;
 
+        // Si es un asiento ocupado,
+        // ponemos al jugador de pie
+        // exactamente donde estaba el mueble.
+        FurnitureSeat asiento =
+            mueble.GetComponent<FurnitureSeat>();
+
+        if (
+            asiento != null &&
+            asiento.EstaOcupado
+        )
+        {
+            asiento
+                .LevantarOcupanteEnPosicionDelMueble();
+        }
+
         GridObstacle obstaculo =
             mueble.GetComponent<GridObstacle>();
 
-        // Primero liberamos las casillas.
+        // Liberamos inmediatamente
+        // las casillas del grid.
         if (obstaculo != null)
         {
             obstaculo.LiberarCasillas();
         }
 
-        selection.muebleSeleccionado = null;
+        selection.muebleSeleccionado =
+            null;
 
         Destroy(mueble);
 

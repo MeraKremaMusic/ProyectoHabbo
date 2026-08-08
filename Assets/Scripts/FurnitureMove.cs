@@ -13,11 +13,18 @@ public class FurnitureMove : MonoBehaviour
     private Quaternion rotacionOriginal;
     private bool rotadoOriginal;
 
+    // Si alguien estaba sentado cuando
+    // empezamos a mover la silla, lo guardamos.
+    // Esto nos permite devolverlo al asiento
+    // si el usuario cancela con ESC.
+    private PlayerSitting ocupanteLevantadoAlMover;
+
     public bool EstaMoviendoExistente
     {
         get
         {
-            return muebleEnMovimiento != null;
+            return
+                muebleEnMovimiento != null;
         }
     }
 
@@ -37,7 +44,10 @@ public class FurnitureMove : MonoBehaviour
         if (placement.EstaColocando)
             return;
 
-        if (Keyboard.current.mKey.wasPressedThisFrame)
+        if (
+            Keyboard.current.mKey
+                .wasPressedThisFrame
+        )
         {
             MoverSeleccionado();
         }
@@ -57,6 +67,11 @@ public class FurnitureMove : MonoBehaviour
         GridObstacle obstaculo =
             mueble.GetComponent<GridObstacle>();
 
+        FurnitureSeat asiento =
+            mueble.GetComponent<FurnitureSeat>();
+
+        // Guardamos el estado ORIGINAL
+        // antes de tocar el mueble.
         muebleEnMovimiento =
             mueble;
 
@@ -72,11 +87,29 @@ public class FurnitureMove : MonoBehaviour
                 datos.rotado;
         }
 
+        ocupanteLevantadoAlMover =
+            null;
+
+        // Si la silla estaba ocupada,
+        // primero ponemos al personaje
+        // de pie donde estaba la silla.
+        if (
+            asiento != null &&
+            asiento.EstaOcupado
+        )
+        {
+            ocupanteLevantadoAlMover =
+                asiento
+                    .LevantarOcupanteEnPosicionDelMueble();
+        }
+
+        // Ahora liberamos las casillas.
         if (obstaculo != null)
         {
             obstaculo.LiberarCasillas();
         }
 
+        // El mueble pasa al cursor.
         placement.muebleActual =
             mueble;
 
@@ -107,6 +140,8 @@ public class FurnitureMove : MonoBehaviour
         GameObject mueble =
             muebleEnMovimiento;
 
+        // Devolvemos el mueble
+        // exactamente a su estado original.
         mueble.transform.position =
             posicionOriginal;
 
@@ -127,13 +162,34 @@ public class FurnitureMove : MonoBehaviour
 
         if (obstaculo != null)
         {
-            obstaculo.RegistrarDesdePosicionActual();
+            obstaculo
+                .RegistrarDesdePosicionActual();
+        }
+
+        // Si alguien estaba sentado antes
+        // de comenzar a moverlo, y cancelamos,
+        // vuelve automáticamente a sentarse.
+        if (
+            ocupanteLevantadoAlMover != null
+        )
+        {
+            FurnitureSeat asiento =
+                mueble.GetComponent<FurnitureSeat>();
+
+            if (asiento != null)
+            {
+                ocupanteLevantadoAlMover
+                    .SentarseDirectamente(
+                        asiento
+                    );
+            }
         }
 
         LimpiarEstado();
 
         Debug.Log(
-            "Movimiento cancelado. Mueble restaurado."
+            "Movimiento cancelado. " +
+            "Mueble restaurado."
         );
     }
 
@@ -143,14 +199,31 @@ public class FurnitureMove : MonoBehaviour
         if (!EsMuebleEnMovimiento(mueble))
             return;
 
+        // Al confirmar, el personaje
+        // permanece de pie donde estaba
+        // originalmente la silla.
         LimpiarEstado();
+
+        Debug.Log(
+            "Nueva posicion del mueble confirmada."
+        );
     }
 
     private void LimpiarEstado()
     {
-        muebleEnMovimiento = null;
-        posicionOriginal = Vector3.zero;
-        rotacionOriginal = Quaternion.identity;
-        rotadoOriginal = false;
+        muebleEnMovimiento =
+            null;
+
+        posicionOriginal =
+            Vector3.zero;
+
+        rotacionOriginal =
+            Quaternion.identity;
+
+        rotadoOriginal =
+            false;
+
+        ocupanteLevantadoAlMover =
+            null;
     }
 }

@@ -21,8 +21,13 @@ public class FurnitureRotation : MonoBehaviour
         if (Keyboard.current == null)
             return;
 
-        if (!Keyboard.current.rKey.wasPressedThisFrame)
+        if (
+            !Keyboard.current.rKey
+                .wasPressedThisFrame
+        )
+        {
             return;
+        }
 
         if (
             placement != null &&
@@ -55,7 +60,8 @@ public class FurnitureRotation : MonoBehaviour
 
         datos.Rotar();
 
-        placement.RefrescarPosicionDesdeMouse();
+        placement
+            .RefrescarPosicionDesdeMouse();
     }
 
     public bool RotarSeleccionado()
@@ -102,7 +108,8 @@ public class FurnitureRotation : MonoBehaviour
         bool rotadoOriginal =
             datos.rotado;
 
-        // Calculamos la casilla ancla ANTES de rotar.
+        // Calculamos el ancla ANTES
+        // de cambiar la rotacion.
         Vector3 puntoAncla =
             posicionOriginal;
 
@@ -124,7 +131,8 @@ public class FurnitureRotation : MonoBehaviour
             return false;
         }
 
-        // Liberamos temporalmente su espacio.
+        // Liberamos temporalmente
+        // sus casillas actuales.
         obstaculo.LiberarCasillas();
 
         datos.Rotar();
@@ -139,7 +147,8 @@ public class FurnitureRotation : MonoBehaviour
 
         if (!puedeRotar)
         {
-            // No cabe: restauramos todo.
+            // Restauramos completamente
+            // si la nueva orientacion no cabe.
             mueble.transform.position =
                 posicionOriginal;
 
@@ -186,6 +195,21 @@ public class FurnitureRotation : MonoBehaviour
             ancla
         );
 
+        // IMPORTANTE:
+        // solo después de comprobar que
+        // la rotación es válida movemos
+        // al personaje sentado.
+        FurnitureSeat asiento =
+            mueble.GetComponent<FurnitureSeat>();
+
+        if (
+            asiento != null &&
+            asiento.EstaOcupado
+        )
+        {
+            asiento.SincronizarOcupante();
+        }
+
         Debug.Log(
             "Mueble rotado correctamente."
         );
@@ -199,13 +223,24 @@ public class FurnitureRotation : MonoBehaviour
         GridManager grid,
         GridOccupancy occupancy)
     {
-        for (int x = 0; x < datos.AnchoActual; x++)
+        for (
+            int x = 0;
+            x < datos.AnchoActual;
+            x++
+        )
         {
-            for (int z = 0; z < datos.LargoActual; z++)
+            for (
+                int z = 0;
+                z < datos.LargoActual;
+                z++
+            )
             {
                 Vector2Int casilla =
                     ancla +
-                    new Vector2Int(x, z);
+                    new Vector2Int(
+                        x,
+                        z
+                    );
 
                 if (
                     casilla.x < 0 ||
@@ -217,7 +252,11 @@ public class FurnitureRotation : MonoBehaviour
                     return false;
                 }
 
-                if (occupancy.EstaOcupada(casilla))
+                if (
+                    occupancy.EstaOcupada(
+                        casilla
+                    )
+                )
                 {
                     return false;
                 }

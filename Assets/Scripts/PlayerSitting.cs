@@ -100,8 +100,6 @@ public class PlayerSitting : MonoBehaviour
             return false;
         }
 
-        // Si hacemos clic en el mismo asiento
-        // donde ya estamos sentados, no hacemos nada.
         if (
             EstaSentado &&
             asientoActual == asiento
@@ -110,15 +108,11 @@ public class PlayerSitting : MonoBehaviour
             return true;
         }
 
-        // Si estábamos sentados en otro sitio,
-        // primero nos levantamos.
         if (EstaSentado)
         {
             LevantarseInmediatamente();
         }
 
-        // Cancela cualquier asiento anterior
-        // al que estuviéramos caminando.
         asientoObjetivo =
             asiento;
 
@@ -129,7 +123,8 @@ public class PlayerSitting : MonoBehaviour
             )
         )
         {
-            asientoObjetivo = null;
+            asientoObjetivo =
+                null;
 
             Debug.Log(
                 "No hay una casilla valida " +
@@ -146,7 +141,8 @@ public class PlayerSitting : MonoBehaviour
             )
         )
         {
-            asientoObjetivo = null;
+            asientoObjetivo =
+                null;
 
             return false;
         }
@@ -162,7 +158,8 @@ public class PlayerSitting : MonoBehaviour
             inicio != destino
         )
         {
-            asientoObjetivo = null;
+            asientoObjetivo =
+                null;
 
             Debug.Log(
                 "El jugador no puede llegar " +
@@ -210,8 +207,6 @@ public class PlayerSitting : MonoBehaviour
             "Caminando hacia el asiento."
         );
 
-        // Si ya estábamos en la casilla
-        // de aproximación.
         if (rutaMundo.Count == 0)
         {
             SentarseAhora();
@@ -230,22 +225,47 @@ public class PlayerSitting : MonoBehaviour
             return;
         }
 
+        FurnitureSeat asiento =
+            asientoObjetivo;
+
+        asientoObjetivo =
+            null;
+
+        SentarseDirectamente(
+            asiento
+        );
+    }
+
+    public bool SentarseDirectamente(
+        FurnitureSeat asiento)
+    {
+        if (asiento == null)
+            return false;
+
         if (
-            !asientoObjetivo
-                .IntentarOcupar(this)
+            asiento.EstaOcupado &&
+            asiento.Ocupante != this
         )
         {
-            EstaYendoASentarse =
-                false;
-
-            asientoObjetivo =
-                null;
-
-            return;
+            return false;
         }
 
-        asientoActual =
-            asientoObjetivo;
+        if (
+            asientoActual != null &&
+            asientoActual != asiento
+        )
+        {
+            asientoActual.Liberar(
+                this
+            );
+        }
+
+        if (
+            movimiento != null
+        )
+        {
+            movimiento.Detener();
+        }
 
         asientoObjetivo =
             null;
@@ -253,17 +273,27 @@ public class PlayerSitting : MonoBehaviour
         EstaYendoASentarse =
             false;
 
+        if (
+            !asiento.IntentarOcupar(
+                this
+            )
+        )
+        {
+            return false;
+        }
+
+        asientoActual =
+            asiento;
+
         transform.position =
-            asientoActual
-                .ObtenerPosicionSentado(
-                    alturaBaseJugador
-                );
+            asiento.ObtenerPosicionSentado(
+                alturaBaseJugador
+            );
 
         if (facing != null)
         {
             facing.MirarHacia(
-                asientoActual
-                    .DireccionFrontal,
+                asiento.DireccionFrontal,
                 true
             );
 
@@ -276,12 +306,86 @@ public class PlayerSitting : MonoBehaviour
         Debug.Log(
             "Jugador sentado correctamente."
         );
+
+        return true;
+    }
+
+    public void SincronizarConAsiento(
+        FurnitureSeat asiento)
+    {
+        if (
+            !EstaSentado ||
+            asiento == null ||
+            asientoActual != asiento
+        )
+        {
+            return;
+        }
+
+        transform.position =
+            asiento.ObtenerPosicionSentado(
+                alturaBaseJugador
+            );
+
+        if (facing != null)
+        {
+            facing.MirarHacia(
+                asiento.DireccionFrontal,
+                true
+            );
+
+            facing.Bloquear(true);
+        }
+    }
+
+    public void ForzarLevantarseEnPosicion(
+        Vector3 posicionMundo)
+    {
+        if (movimiento != null)
+        {
+            movimiento.Detener();
+        }
+
+        asientoObjetivo =
+            null;
+
+        EstaYendoASentarse =
+            false;
+
+        if (asientoActual != null)
+        {
+            FurnitureSeat asientoAnterior =
+                asientoActual;
+
+            asientoActual =
+                null;
+
+            asientoAnterior.Liberar(
+                this
+            );
+        }
+
+        EstaSentado =
+            false;
+
+        if (facing != null)
+        {
+            facing.Bloquear(false);
+        }
+
+        posicionMundo.y =
+            alturaBaseJugador;
+
+        transform.position =
+            posicionMundo;
+
+        Debug.Log(
+            "Jugador puesto de pie."
+        );
     }
 
     public void PrepararParaCaminar()
     {
-        // Si estaba caminando hacia una silla
-        // pero el usuario hizo clic en otro sitio.
         if (EstaYendoASentarse)
         {
             EstaYendoASentarse =
@@ -289,6 +393,11 @@ public class PlayerSitting : MonoBehaviour
 
             asientoObjetivo =
                 null;
+
+            if (movimiento != null)
+            {
+                movimiento.Detener();
+            }
         }
 
         if (!EstaSentado)
@@ -313,20 +422,8 @@ public class PlayerSitting : MonoBehaviour
         FurnitureSeat asiento =
             asientoActual;
 
-        asiento.Liberar(
-            this
-        );
-
-        EstaSentado =
-            false;
-
-        asientoActual =
-            null;
-
-        if (facing != null)
-        {
-            facing.Bloquear(false);
-        }
+        Vector3 posicionDestino =
+            transform.position;
 
         if (
             grid != null &&
@@ -336,12 +433,16 @@ public class PlayerSitting : MonoBehaviour
             )
         )
         {
-            transform.position =
+            posicionDestino =
                 grid.ObtenerCentroCasilla(
                     casilla,
                     alturaBaseJugador
                 );
         }
+
+        ForzarLevantarseEnPosicion(
+            posicionDestino
+        );
 
         Debug.Log(
             "Jugador levantado."

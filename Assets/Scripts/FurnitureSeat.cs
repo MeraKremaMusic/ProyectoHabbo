@@ -14,7 +14,11 @@ public class FurnitureSeat : MonoBehaviour
     [Header("Visualizacion")]
     public float distanciaVisualAproximacion = 1f;
 
-    public PlayerSitting Ocupante { get; private set; }
+    public PlayerSitting Ocupante
+    {
+        get;
+        private set;
+    }
 
     public bool EstaOcupado
     {
@@ -35,7 +39,10 @@ public class FurnitureSeat : MonoBehaviour
 
             direccion.y = 0f;
 
-            if (direccion.sqrMagnitude < 0.001f)
+            if (
+                direccion.sqrMagnitude <
+                0.001f
+            )
             {
                 direccion =
                     Vector3.forward;
@@ -128,6 +135,13 @@ public class FurnitureSeat : MonoBehaviour
         PlayerSitting jugador)
     {
         if (
+            jugador == null
+        )
+        {
+            return false;
+        }
+
+        if (
             Ocupante != null &&
             Ocupante != jugador
         )
@@ -146,8 +160,37 @@ public class FurnitureSeat : MonoBehaviour
     {
         if (Ocupante == jugador)
         {
-            Ocupante = null;
+            Ocupante =
+                null;
         }
+    }
+
+    public void SincronizarOcupante()
+    {
+        if (Ocupante == null)
+            return;
+
+        Ocupante.SincronizarConAsiento(
+            this
+        );
+    }
+
+    public PlayerSitting LevantarOcupanteEnPosicionDelMueble()
+    {
+        if (Ocupante == null)
+            return null;
+
+        PlayerSitting jugador =
+            Ocupante;
+
+        Vector3 posicionDePie =
+            transform.position;
+
+        jugador.ForzarLevantarseEnPosicion(
+            posicionDePie
+        );
+
+        return jugador;
     }
 
     private void OnDrawGizmosSelected()
