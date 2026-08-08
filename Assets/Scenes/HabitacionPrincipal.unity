@@ -208,15 +208,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: da36aa60cccae794fa00fef56f4ae0e5, type: 3}
       propertyPath: m_LocalScale.x
-      value: 150
+      value: 175
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: da36aa60cccae794fa00fef56f4ae0e5, type: 3}
       propertyPath: m_LocalScale.y
-      value: 150
+      value: 175
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: da36aa60cccae794fa00fef56f4ae0e5, type: 3}
       propertyPath: m_LocalScale.z
-      value: 150
+      value: 175
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: da36aa60cccae794fa00fef56f4ae0e5, type: 3}
       propertyPath: m_LocalPosition.x
@@ -580,6 +580,7 @@ GameObject:
   - component: {fileID: 735926861}
   - component: {fileID: 735926862}
   - component: {fileID: 735926863}
+  - component: {fileID: 735926864}
   m_Layer: 0
   m_Name: FurnitureManager
   m_TagString: Untagged
@@ -602,7 +603,7 @@ MonoBehaviour:
   grid: {fileID: 932419302}
   piso: {fileID: 2143770704}
   muebleActual: {fileID: 0}
-  alturaSobrePiso: 0.5
+  separacionPiso: 0
 --- !u!4 &735926850
 Transform:
   m_ObjectHideFlags: 0
@@ -805,6 +806,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c5bad4ba53dffd47aee5869846eceed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FurnitureContextMenuAutoUI
+--- !u!114 &735926864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 735926848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e278e2c349004314d935184e629a6a1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FurnitureInteraction
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -870,6 +883,7 @@ GameObject:
   - component: {fileID: 874710020}
   - component: {fileID: 874710021}
   - component: {fileID: 874710022}
+  - component: {fileID: 874710023}
   m_Layer: 0
   m_Name: JugadorPrueba
   m_TagString: Untagged
@@ -999,9 +1013,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerFacing
   visual: {fileID: 302041979}
-  umbralMovimiento: 0.001
+  movimiento: {fileID: 0}
   velocidadGiro: 900
   direccionActual: 4
+  bloqueadoExternamente: 0
 --- !u!114 &874710021
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1029,7 +1044,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationController
   estado: {fileID: 874710021}
+  sitting: {fileID: 0}
   animator: {fileID: 302041980}
+--- !u!114 &874710023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874710014}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a791d3da679b33f42b40faba19c4942d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSitting
+  movimiento: {fileID: 0}
+  facing: {fileID: 0}
+  grid: {fileID: 0}
+  pathfinding: {fileID: 0}
 --- !u!1 &932419298
 GameObject:
   m_ObjectHideFlags: 0
