@@ -14,11 +14,11 @@ public class PlayerFacing : MonoBehaviour
         Noroeste
     }
 
-    [Header("Referencia visual")]
+    [Header("Referencias")]
     public Transform visual;
+    public PlayerMovement movimiento;
 
     [Header("Configuracion")]
-    public float umbralMovimiento = 0.001f;
     public float velocidadGiro = 720f;
 
     [Header("Estado")]
@@ -27,14 +27,20 @@ public class PlayerFacing : MonoBehaviour
 
     public bool bloqueadoExternamente;
 
-    private Vector3 posicionAnterior;
     private Quaternion rotacionObjetivo;
+
+    private void Awake()
+    {
+        // No queremos configurarlo manualmente.
+        if (movimiento == null)
+        {
+            movimiento =
+                GetComponent<PlayerMovement>();
+        }
+    }
 
     private void Start()
     {
-        posicionAnterior =
-            transform.position;
-
         if (visual == null)
         {
             visual =
@@ -47,39 +53,30 @@ public class PlayerFacing : MonoBehaviour
 
     private void LateUpdate()
     {
+        // Cuando está sentado,
+        // PlayerSitting controla la dirección.
         if (bloqueadoExternamente)
-        {
-            posicionAnterior =
-                transform.position;
-
             return;
-        }
 
-        DetectarDireccion();
-        GirarSuavemente();
-    }
+        if (movimiento == null)
+            return;
 
-    private void DetectarDireccion()
-    {
-        Vector3 movimiento =
-            transform.position -
-            posicionAnterior;
-
-        movimiento.y = 0f;
-
+        // SOLO usamos la ruta real.
+        // Teletransportes o ajustes de posición
+        // ya no pueden cambiar la dirección.
         if (
-            movimiento.sqrMagnitude >
-            umbralMovimiento *
-            umbralMovimiento
+            movimiento
+                .ObtenerDireccionMovimiento(
+                    out Vector3 direccion
+                )
         )
         {
             ActualizarDireccion(
-                movimiento
+                direccion
             );
         }
 
-        posicionAnterior =
-            transform.position;
+        GirarSuavemente();
     }
 
     private void ActualizarDireccion(
@@ -89,7 +86,7 @@ public class PlayerFacing : MonoBehaviour
 
         if (
             movimiento.sqrMagnitude <
-            0.001f
+            0.000001f
         )
         {
             return;
@@ -141,16 +138,24 @@ public class PlayerFacing : MonoBehaviour
             );
     }
 
+    /// <summary>
+    /// Bloquea el giro automatico.
+    /// Se usa mientras el personaje
+    /// esta sentado.
+    /// </summary>
     public void Bloquear(
         bool bloquear)
     {
         bloqueadoExternamente =
             bloquear;
-
-        posicionAnterior =
-            transform.position;
     }
 
+    /// <summary>
+    /// Fuerza al personaje a mirar
+    /// hacia una direccion concreta.
+    /// FurnitureSeat usa esto
+    /// cuando se sienta.
+    /// </summary>
     public void MirarHacia(
         Vector3 direccion,
         bool instantaneo = true)
@@ -159,7 +164,7 @@ public class PlayerFacing : MonoBehaviour
 
         if (
             direccion.sqrMagnitude <
-            0.001f
+            0.000001f
         )
         {
             return;
