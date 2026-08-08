@@ -15,16 +15,31 @@ public class FurniturePlacement : MonoBehaviour
 
     private Vector2Int casillaAnclaActual;
     private bool tieneAncla;
+    private int frameUltimaColocacion = -1;
+
+    public bool EstaColocando
+    {
+        get { return muebleActual != null; }
+    }
+
+    public bool BloquearSeleccionJugador
+    {
+        get
+        {
+            return EstaColocando ||
+                   Time.frameCount == frameUltimaColocacion;
+        }
+    }
 
     private void Update()
     {
-        if (muebleActual == null)
+        if (!EstaColocando)
             return;
 
-        SeguirMouse();
+        RefrescarPosicionDesdeMouse();
     }
 
-    private void SeguirMouse()
+    public void RefrescarPosicionDesdeMouse()
     {
         if (Mouse.current == null)
             return;
@@ -41,16 +56,7 @@ public class FurniturePlacement : MonoBehaviour
             camara.ScreenPointToRay(posicionMouse);
 
         float alturaPiso =
-            piso.transform.position.y;
-
-        Collider colliderPiso =
-            piso.GetComponent<Collider>();
-
-        if (colliderPiso != null)
-        {
-            alturaPiso =
-                colliderPiso.bounds.max.y;
-        }
+            ObtenerAlturaPiso();
 
         Plane planoPiso =
             new Plane(
@@ -75,15 +81,31 @@ public class FurniturePlacement : MonoBehaviour
             )
         )
         {
+            tieneAncla = false;
             return;
         }
 
         casillaAnclaActual = casillaMouse;
         tieneAncla = true;
 
-        ActualizarPosicionMueble(
-            alturaPiso
-        );
+        ActualizarPosicionMueble(alturaPiso);
+    }
+
+    public bool ObtenerCasillaAncla(
+        out Vector2Int casilla)
+    {
+        casilla = casillaAnclaActual;
+
+        return tieneAncla;
+    }
+
+    public void FinalizarColocacion()
+    {
+        frameUltimaColocacion =
+            Time.frameCount;
+
+        muebleActual = null;
+        tieneAncla = false;
     }
 
     private void ActualizarPosicionMueble(
@@ -104,14 +126,12 @@ public class FurniturePlacement : MonoBehaviour
             largo = datos.LargoActual;
         }
 
-        // Esta es SIEMPRE la casilla bajo el mouse.
         Vector3 centroCasillaAncla =
             grid.ObtenerCentroCasilla(
                 casillaAnclaActual,
                 alturaPiso + alturaSobrePiso
             );
 
-        // El mueble se extiende desde la casilla ancla.
         float desplazamientoX =
             ((ancho - 1) *
             grid.tamanoCasilla) / 2f;
@@ -127,5 +147,22 @@ public class FurniturePlacement : MonoBehaviour
                 0f,
                 desplazamientoZ
             );
+    }
+
+    private float ObtenerAlturaPiso()
+    {
+        float alturaPiso =
+            piso.transform.position.y;
+
+        Collider colliderPiso =
+            piso.GetComponent<Collider>();
+
+        if (colliderPiso != null)
+        {
+            alturaPiso =
+                colliderPiso.bounds.max.y;
+        }
+
+        return alturaPiso;
     }
 }

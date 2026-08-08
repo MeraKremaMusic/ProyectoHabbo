@@ -11,8 +11,13 @@ public class FurnitureRotation : MonoBehaviour
         if (Keyboard.current == null)
             return;
 
-        if (placement == null || placement.muebleActual == null)
+        if (
+            placement == null ||
+            placement.muebleActual == null
+        )
+        {
             return;
+        }
 
         if (Keyboard.current.rKey.wasPressedThisFrame)
         {
@@ -23,11 +28,14 @@ public class FurnitureRotation : MonoBehaviour
     private void RotarMuebleActual()
     {
         FurnitureData datos =
-            placement.muebleActual.GetComponent<FurnitureData>();
+            placement.muebleActual
+                .GetComponent<FurnitureData>();
 
         if (datos == null)
             return;
 
         datos.Rotar();
+
+        placement.RefrescarPosicionDesdeMouse();
     }
 }

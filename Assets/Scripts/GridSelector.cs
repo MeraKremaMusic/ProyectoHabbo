@@ -9,6 +9,7 @@ public class GridSelector : MonoBehaviour
     public GameObject piso;
     public PlayerMovement jugador;
     public Pathfinding pathfinding;
+    public FurniturePlacement furniturePlacement;
 
     private GameObject marcador;
 
@@ -21,6 +22,16 @@ public class GridSelector : MonoBehaviour
     {
         if (Mouse.current == null)
             return;
+
+        // Mientras estamos colocando un mueble,
+        // el clic NO debe mover al jugador.
+        if (
+            furniturePlacement != null &&
+            furniturePlacement.BloquearSeleccionJugador
+        )
+        {
+            return;
+        }
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
@@ -51,8 +62,8 @@ public class GridSelector : MonoBehaviour
         Ray ray =
             camara.ScreenPointToRay(posicionMouse);
 
-        // Calculamos la altura real de la superficie del piso.
-        float alturaPiso = piso.transform.position.y;
+        float alturaPiso =
+            piso.transform.position.y;
 
         Collider colliderPiso =
             piso.GetComponent<Collider>();
@@ -63,7 +74,8 @@ public class GridSelector : MonoBehaviour
                 colliderPiso.bounds.max.y;
         }
 
-        // Plano invisible exactamente encima del suelo.
+        // Calculamos el clic contra un plano invisible
+        // para que los muebles no bloqueen la selección.
         Plane planoPiso =
             new Plane(
                 Vector3.up,
@@ -74,7 +86,6 @@ public class GridSelector : MonoBehaviour
                 )
             );
 
-        // Ya NO importa si un mueble está delante.
         if (!planoPiso.Raycast(ray, out float distancia))
             return;
 
@@ -157,7 +168,9 @@ public class GridSelector : MonoBehaviour
                 alturaPiso + 0.03f
             );
 
-        marcador.transform.position = posicion;
+        marcador.transform.position =
+            posicion;
+
         marcador.SetActive(true);
     }
 
@@ -200,7 +213,8 @@ public class GridSelector : MonoBehaviour
                 Color.green
             );
 
-            renderer.material = material;
+            renderer.material =
+                material;
         }
 
         marcador.SetActive(false);

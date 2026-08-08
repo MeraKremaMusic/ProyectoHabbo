@@ -6,22 +6,31 @@ public class GridObstacle : MonoBehaviour
     [Header("Referencias")]
     public GridManager grid;
     public GridOccupancy occupancy;
+    public FurnitureData datos;
 
-    [Header("Espacio ocupado")]
-    [Min(1)]
-    public int anchoCasillas = 1;
-
-    [Min(1)]
-    public int largoCasillas = 1;
+    [Header("Configuracion")]
+    public bool registrarAlIniciar = true;
 
     private readonly List<Vector2Int> casillasRegistradas =
         new List<Vector2Int>();
 
     private bool registrado;
 
+    private void Awake()
+    {
+        if (datos == null)
+        {
+            datos =
+                GetComponent<FurnitureData>();
+        }
+    }
+
     private void Start()
     {
-        RegistrarObstaculo();
+        if (registrarAlIniciar)
+        {
+            RegistrarDesdePosicionActual();
+        }
     }
 
     private void OnDestroy()
@@ -29,48 +38,42 @@ public class GridObstacle : MonoBehaviour
         LiberarCasillas();
     }
 
-    private void RegistrarObstaculo()
+    public bool RegistrarDesdeAncla(
+        Vector2Int ancla)
     {
-        if (grid == null || occupancy == null)
-            return;
-
-        casillasRegistradas.Clear();
-
-        Vector3 posicionInicial = transform.position;
-
-        posicionInicial.x -=
-            ((anchoCasillas - 1) * grid.tamanoCasilla) / 2f;
-
-        posicionInicial.z -=
-            ((largoCasillas - 1) * grid.tamanoCasilla) / 2f;
-
         if (
-            !grid.ObtenerCasilla(
-                posicionInicial,
-                out Vector2Int casillaInicial
-            )
+            grid == null ||
+            occupancy == null ||
+            datos == null
         )
         {
-            return;
+            return false;
         }
 
-        for (int x = 0; x < anchoCasillas; x++)
+        LiberarCasillas();
+
+        for (int x = 0; x < datos.AnchoActual; x++)
         {
-            for (int z = 0; z < largoCasillas; z++)
+            for (int z = 0; z < datos.LargoActual; z++)
             {
                 Vector2Int casilla =
-                    casillaInicial +
+                    ancla +
                     new Vector2Int(x, z);
 
-                if (
-                    casilla.x < 0 ||
-                    casilla.x >= grid.ancho ||
-                    casilla.y < 0 ||
-                    casilla.y >= grid.largo
-                )
+                if (!EstaDentro(casilla))
                 {
-                    continue;
+                    return false;
                 }
+            }
+        }
+
+        for (int x = 0; x < datos.AnchoActual; x++)
+        {
+            for (int z = 0; z < datos.LargoActual; z++)
+            {
+                Vector2Int casilla =
+                    ancla +
+                    new Vector2Int(x, z);
 
                 occupancy.Ocupar(casilla);
                 casillasRegistradas.Add(casilla);
@@ -81,23 +84,65 @@ public class GridObstacle : MonoBehaviour
 
         Debug.Log(
             gameObject.name +
-            " ocupa " +
+            " colocado. Ocupa " +
             casillasRegistradas.Count +
             " casillas."
         );
+
+        return true;
     }
 
-    private void LiberarCasillas()
+    public void LiberarCasillas()
     {
         if (!registrado || occupancy == null)
             return;
 
-        foreach (Vector2Int casilla in casillasRegistradas)
+        foreach (
+            Vector2Int casilla
+            in casillasRegistradas
+        )
         {
             occupancy.Liberar(casilla);
         }
 
         casillasRegistradas.Clear();
         registrado = false;
+    }
+
+    private void RegistrarDesdePosicionActual()
+    {
+        if (datos == null || grid == null)
+            return;
+
+        Vector3 posicionAncla =
+            transform.position;
+
+        posicionAncla.x -=
+            ((datos.AnchoActual - 1) *
+            grid.tamanoCasilla) / 2f;
+
+        posicionAncla.z -=
+            ((datos.LargoActual - 1) *
+            grid.tamanoCasilla) / 2f;
+
+        if (
+            grid.ObtenerCasilla(
+                posicionAncla,
+                out Vector2Int ancla
+            )
+        )
+        {
+            RegistrarDesdeAncla(ancla);
+        }
+    }
+
+    private bool EstaDentro(
+        Vector2Int casilla)
+    {
+        return
+            casilla.x >= 0 &&
+            casilla.x < grid.ancho &&
+            casilla.y >= 0 &&
+            casilla.y < grid.largo;
     }
 }
