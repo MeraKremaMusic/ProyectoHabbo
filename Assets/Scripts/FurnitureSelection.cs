@@ -15,8 +15,8 @@ public class FurnitureSelection : MonoBehaviour
         if (Mouse.current == null)
             return;
 
-        // No seleccionar muebles mientras estamos
-        // colocando otro.
+        // No seleccionar muebles mientras
+        // estamos colocando otro.
         if (
             placement != null &&
             placement.EstaColocando
@@ -25,7 +25,7 @@ public class FurnitureSelection : MonoBehaviour
             return;
         }
 
-        // Ignorar clics sobre interfaz.
+        // Ignorar clics sobre la interfaz.
         if (
             EventSystem.current != null &&
             EventSystem.current.IsPointerOverGameObject()
@@ -34,7 +34,12 @@ public class FurnitureSelection : MonoBehaviour
             return;
         }
 
-        if (Mouse.current.leftButton.wasPressedThisFrame)
+        // Desde ahora los muebles se editan
+        // con CLIC DERECHO.
+        if (
+            Mouse.current.rightButton
+                .wasPressedThisFrame
+        )
         {
             DetectarMueble();
         }
@@ -51,7 +56,9 @@ public class FurnitureSelection : MonoBehaviour
             Mouse.current.position.ReadValue();
 
         Ray ray =
-            camara.ScreenPointToRay(posicionMouse);
+            camara.ScreenPointToRay(
+                posicionMouse
+            );
 
         if (
             Physics.Raycast(
@@ -62,7 +69,8 @@ public class FurnitureSelection : MonoBehaviour
         )
         {
             FurnitureData datos =
-                hit.collider.GetComponentInParent<FurnitureData>();
+                hit.collider
+                    .GetComponentInParent<FurnitureData>();
 
             if (datos != null)
             {
@@ -78,6 +86,11 @@ public class FurnitureSelection : MonoBehaviour
             }
         }
 
+        muebleSeleccionado = null;
+    }
+
+    public void Deseleccionar()
+    {
         muebleSeleccionado = null;
     }
 }
