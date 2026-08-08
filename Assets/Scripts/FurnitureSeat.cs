@@ -3,43 +3,50 @@ using UnityEngine;
 public class FurnitureSeat : MonoBehaviour
 {
     [Header("Configuracion del asiento")]
-
-    [Tooltip(
-        "Activa esto si el frente detectado " +
-        "queda apuntando hacia el respaldo."
-    )]
     public bool invertirFrente = false;
 
-    [Tooltip(
-        "Pequeno ajuste del jugador hacia " +
-        "adelante o atras sobre el asiento."
-    )]
     [Range(-0.5f, 0.5f)]
     public float ajusteProfundidad = 0f;
 
+    [Range(-0.5f, 0.5f)]
+    public float ajusteAlturaJugador = 0f;
+
     [Header("Visualizacion")]
     public float distanciaVisualAproximacion = 1f;
+
+    public PlayerSitting Ocupante { get; private set; }
+
+    public bool EstaOcupado
+    {
+        get
+        {
+            return Ocupante != null;
+        }
+    }
 
     public Vector3 DireccionFrontal
     {
         get
         {
             Vector3 direccion =
-                transform.forward;
-
-            if (invertirFrente)
-            {
-                direccion = -direccion;
-            }
+                invertirFrente
+                    ? -transform.forward
+                    : transform.forward;
 
             direccion.y = 0f;
+
+            if (direccion.sqrMagnitude < 0.001f)
+            {
+                direccion =
+                    Vector3.forward;
+            }
 
             return direccion.normalized;
         }
     }
 
     public Vector3 ObtenerPosicionSentado(
-        float alturaJugador)
+        float alturaBaseJugador)
     {
         Vector3 posicion =
             transform.position;
@@ -49,7 +56,8 @@ public class FurnitureSeat : MonoBehaviour
             ajusteProfundidad;
 
         posicion.y =
-            alturaJugador;
+            alturaBaseJugador +
+            ajusteAlturaJugador;
 
         return posicion;
     }
@@ -58,7 +66,8 @@ public class FurnitureSeat : MonoBehaviour
         GridManager grid,
         out Vector2Int casilla)
     {
-        casilla = Vector2Int.zero;
+        casilla =
+            Vector2Int.zero;
 
         if (grid == null)
             return false;
@@ -78,7 +87,6 @@ public class FurnitureSeat : MonoBehaviour
 
         Vector2Int direccionCasilla;
 
-        // Elegimos el eje dominante.
         if (
             Mathf.Abs(frente.x) >
             Mathf.Abs(frente.z)
@@ -103,7 +111,43 @@ public class FurnitureSeat : MonoBehaviour
             casillaSilla +
             direccionCasilla;
 
+        if (
+            casilla.x < 0 ||
+            casilla.x >= grid.ancho ||
+            casilla.y < 0 ||
+            casilla.y >= grid.largo
+        )
+        {
+            return false;
+        }
+
         return true;
+    }
+
+    public bool IntentarOcupar(
+        PlayerSitting jugador)
+    {
+        if (
+            Ocupante != null &&
+            Ocupante != jugador
+        )
+        {
+            return false;
+        }
+
+        Ocupante =
+            jugador;
+
+        return true;
+    }
+
+    public void Liberar(
+        PlayerSitting jugador)
+    {
+        if (Ocupante == jugador)
+        {
+            Ocupante = null;
+        }
     }
 
     private void OnDrawGizmosSelected()
@@ -112,7 +156,6 @@ public class FurnitureSeat : MonoBehaviour
             transform.position +
             Vector3.up * 0.15f;
 
-        // Punto donde quedara el jugador.
         Gizmos.color =
             Color.green;
 
@@ -123,7 +166,6 @@ public class FurnitureSeat : MonoBehaviour
             0.08f
         );
 
-        // Direccion frontal de la silla.
         Gizmos.color =
             Color.blue;
 

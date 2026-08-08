@@ -12,7 +12,24 @@ public class GridSelector : MonoBehaviour
     public Pathfinding pathfinding;
     public FurniturePlacement furniturePlacement;
 
+    private FurnitureInteraction furnitureInteraction;
+    private PlayerSitting playerSitting;
+
     private GameObject marcador;
+
+    private void Awake()
+    {
+        furnitureInteraction =
+            FindFirstObjectByType
+                <FurnitureInteraction>();
+
+        if (jugador != null)
+        {
+            playerSitting =
+                jugador.GetComponent
+                    <PlayerSitting>();
+        }
+    }
 
     private void Start()
     {
@@ -24,25 +41,28 @@ public class GridSelector : MonoBehaviour
         if (Mouse.current == null)
             return;
 
-            if (
-    EventSystem.current != null &&
-    EventSystem.current.IsPointerOverGameObject()
-)
-{
-    return;
-}
-
-        // Mientras estamos colocando un mueble,
-        // el clic NO debe mover al jugador.
         if (
-            furniturePlacement != null &&
-            furniturePlacement.BloquearSeleccionJugador
+            EventSystem.current != null &&
+            EventSystem.current
+                .IsPointerOverGameObject()
         )
         {
             return;
         }
 
-        if (Mouse.current.leftButton.wasPressedThisFrame)
+        if (
+            furniturePlacement != null &&
+            furniturePlacement
+                .BloquearSeleccionJugador
+        )
+        {
+            return;
+        }
+
+        if (
+            Mouse.current.leftButton
+                .wasPressedThisFrame
+        )
         {
             DetectarCasilla();
         }
@@ -60,16 +80,49 @@ public class GridSelector : MonoBehaviour
             return;
         }
 
-        Camera camara = Camera.main;
+        Camera camara =
+            Camera.main;
 
         if (camara == null)
             return;
 
         Vector2 posicionMouse =
-            Mouse.current.position.ReadValue();
+            Mouse.current
+                .position
+                .ReadValue();
+
+        // PRIMERO:
+        // comprobamos si el clic fue
+        // sobre un mueble interactuable.
+        if (
+            furnitureInteraction != null &&
+            furnitureInteraction
+                .IntentarInteractuar(
+                    posicionMouse
+                )
+        )
+        {
+            if (marcador != null)
+            {
+                marcador.SetActive(false);
+            }
+
+            return;
+        }
+
+        // Si clicamos el suelo mientras
+        // estamos sentados, primero
+        // nos levantamos.
+        if (playerSitting != null)
+        {
+            playerSitting
+                .PrepararParaCaminar();
+        }
 
         Ray ray =
-            camara.ScreenPointToRay(posicionMouse);
+            camara.ScreenPointToRay(
+                posicionMouse
+            );
 
         float alturaPiso =
             piso.transform.position.y;
@@ -83,8 +136,6 @@ public class GridSelector : MonoBehaviour
                 colliderPiso.bounds.max.y;
         }
 
-        // Calculamos el clic contra un plano invisible
-        // para que los muebles no bloqueen la selección.
         Plane planoPiso =
             new Plane(
                 Vector3.up,
@@ -95,8 +146,15 @@ public class GridSelector : MonoBehaviour
                 )
             );
 
-        if (!planoPiso.Raycast(ray, out float distancia))
+        if (
+            !planoPiso.Raycast(
+                ray,
+                out float distancia
+            )
+        )
+        {
             return;
+        }
 
         Vector3 puntoPiso =
             ray.GetPoint(distancia);
@@ -133,7 +191,8 @@ public class GridSelector : MonoBehaviour
         )
         {
             Debug.Log(
-                "No se puede llegar a esa casilla."
+                "No se puede llegar " +
+                "a esa casilla."
             );
 
             return;
@@ -147,23 +206,34 @@ public class GridSelector : MonoBehaviour
         List<Vector3> rutaMundo =
             new List<Vector3>();
 
-        foreach (Vector2Int casilla in rutaCasillas)
+        foreach (
+            Vector2Int casilla
+            in rutaCasillas
+        )
         {
             Vector3 punto =
                 grid.ObtenerCentroCasilla(
                     casilla,
-                    jugador.transform.position.y
+                    jugador
+                        .transform
+                        .position.y
                 );
 
-            rutaMundo.Add(punto);
+            rutaMundo.Add(
+                punto
+            );
         }
 
-        jugador.SeguirRuta(rutaMundo);
+        jugador.SeguirRuta(
+            rutaMundo
+        );
 
         Debug.Log(
             "Destino seleccionado: (" +
-            destino.x + ", " +
-            destino.y + ")"
+            destino.x +
+            ", " +
+            destino.y +
+            ")"
         );
     }
 
@@ -180,7 +250,9 @@ public class GridSelector : MonoBehaviour
         marcador.transform.position =
             posicion;
 
-        marcador.SetActive(true);
+        marcador.SetActive(
+            true
+        );
     }
 
     private void CrearMarcador()
@@ -226,6 +298,8 @@ public class GridSelector : MonoBehaviour
                 material;
         }
 
-        marcador.SetActive(false);
+        marcador.SetActive(
+            false
+        );
     }
 }

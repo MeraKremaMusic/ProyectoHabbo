@@ -22,23 +22,39 @@ public class PlayerFacing : MonoBehaviour
     public float velocidadGiro = 720f;
 
     [Header("Estado")]
-    public Direccion8 direccionActual = Direccion8.Sur;
+    public Direccion8 direccionActual =
+        Direccion8.Sur;
+
+    public bool bloqueadoExternamente;
 
     private Vector3 posicionAnterior;
     private Quaternion rotacionObjetivo;
 
     private void Start()
     {
-        posicionAnterior = transform.position;
+        posicionAnterior =
+            transform.position;
 
         if (visual == null)
-            visual = transform;
+        {
+            visual =
+                transform;
+        }
 
-        rotacionObjetivo = visual.rotation;
+        rotacionObjetivo =
+            visual.rotation;
     }
 
     private void LateUpdate()
     {
+        if (bloqueadoExternamente)
+        {
+            posicionAnterior =
+                transform.position;
+
+            return;
+        }
+
         DetectarDireccion();
         GirarSuavemente();
     }
@@ -46,23 +62,39 @@ public class PlayerFacing : MonoBehaviour
     private void DetectarDireccion()
     {
         Vector3 movimiento =
-            transform.position - posicionAnterior;
+            transform.position -
+            posicionAnterior;
 
         movimiento.y = 0f;
 
         if (
             movimiento.sqrMagnitude >
-            umbralMovimiento * umbralMovimiento
+            umbralMovimiento *
+            umbralMovimiento
         )
         {
-            ActualizarDireccion(movimiento);
+            ActualizarDireccion(
+                movimiento
+            );
         }
 
-        posicionAnterior = transform.position;
+        posicionAnterior =
+            transform.position;
     }
 
-    private void ActualizarDireccion(Vector3 movimiento)
+    private void ActualizarDireccion(
+        Vector3 movimiento)
     {
+        movimiento.y = 0f;
+
+        if (
+            movimiento.sqrMagnitude <
+            0.001f
+        )
+        {
+            return;
+        }
+
         movimiento.Normalize();
 
         float angulo =
@@ -72,10 +104,14 @@ public class PlayerFacing : MonoBehaviour
             ) * Mathf.Rad2Deg;
 
         if (angulo < 0f)
+        {
             angulo += 360f;
+        }
 
         int indice =
-            Mathf.RoundToInt(angulo / 45f) % 8;
+            Mathf.RoundToInt(
+                angulo / 45f
+            ) % 8;
 
         direccionActual =
             (Direccion8)indice;
@@ -100,7 +136,46 @@ public class PlayerFacing : MonoBehaviour
             Quaternion.RotateTowards(
                 visual.rotation,
                 rotacionObjetivo,
-                velocidadGiro * Time.deltaTime
+                velocidadGiro *
+                Time.deltaTime
             );
+    }
+
+    public void Bloquear(
+        bool bloquear)
+    {
+        bloqueadoExternamente =
+            bloquear;
+
+        posicionAnterior =
+            transform.position;
+    }
+
+    public void MirarHacia(
+        Vector3 direccion,
+        bool instantaneo = true)
+    {
+        direccion.y = 0f;
+
+        if (
+            direccion.sqrMagnitude <
+            0.001f
+        )
+        {
+            return;
+        }
+
+        ActualizarDireccion(
+            direccion
+        );
+
+        if (
+            instantaneo &&
+            visual != null
+        )
+        {
+            visual.rotation =
+                rotacionObjetivo;
+        }
     }
 }
