@@ -11,23 +11,33 @@ public class FurniturePlacement : MonoBehaviour
     public GameObject muebleActual;
 
     [Header("Configuracion")]
-    public float alturaSobrePiso = 0.5f;
+    [Tooltip(
+        "Pequena separacion opcional entre " +
+        "el mueble y el piso."
+    )]
+    public float separacionPiso = 0f;
 
     private Vector2Int casillaAnclaActual;
     private bool tieneAncla;
+
     private int frameUltimaColocacion = -1;
 
     public bool EstaColocando
     {
-        get { return muebleActual != null; }
+        get
+        {
+            return muebleActual != null;
+        }
     }
 
     public bool BloquearSeleccionJugador
     {
         get
         {
-            return EstaColocando ||
-                   Time.frameCount == frameUltimaColocacion;
+            return
+                EstaColocando ||
+                Time.frameCount ==
+                frameUltimaColocacion;
         }
     }
 
@@ -44,16 +54,25 @@ public class FurniturePlacement : MonoBehaviour
         if (Mouse.current == null)
             return;
 
-        Camera camara = Camera.main;
+        Camera camara =
+            Camera.main;
 
-        if (camara == null || grid == null || piso == null)
+        if (
+            camara == null ||
+            grid == null ||
+            piso == null
+        )
+        {
             return;
+        }
 
         Vector2 posicionMouse =
             Mouse.current.position.ReadValue();
 
         Ray ray =
-            camara.ScreenPointToRay(posicionMouse);
+            camara.ScreenPointToRay(
+                posicionMouse
+            );
 
         float alturaPiso =
             ObtenerAlturaPiso();
@@ -68,8 +87,15 @@ public class FurniturePlacement : MonoBehaviour
                 )
             );
 
-        if (!planoPiso.Raycast(ray, out float distancia))
+        if (
+            !planoPiso.Raycast(
+                ray,
+                out float distancia
+            )
+        )
+        {
             return;
+        }
 
         Vector3 puntoPiso =
             ray.GetPoint(distancia);
@@ -85,16 +111,22 @@ public class FurniturePlacement : MonoBehaviour
             return;
         }
 
-        casillaAnclaActual = casillaMouse;
-        tieneAncla = true;
+        casillaAnclaActual =
+            casillaMouse;
 
-        ActualizarPosicionMueble(alturaPiso);
+        tieneAncla =
+            true;
+
+        ActualizarPosicionMueble(
+            alturaPiso
+        );
     }
 
     public bool ObtenerCasillaAncla(
         out Vector2Int casilla)
     {
-        casilla = casillaAnclaActual;
+        casilla =
+            casillaAnclaActual;
 
         return tieneAncla;
     }
@@ -104,32 +136,47 @@ public class FurniturePlacement : MonoBehaviour
         frameUltimaColocacion =
             Time.frameCount;
 
-        muebleActual = null;
-        tieneAncla = false;
+        muebleActual =
+            null;
+
+        tieneAncla =
+            false;
     }
 
     private void ActualizarPosicionMueble(
         float alturaPiso)
     {
-        if (!tieneAncla || muebleActual == null)
+        if (
+            !tieneAncla ||
+            muebleActual == null
+        )
+        {
             return;
+        }
 
         FurnitureData datos =
-            muebleActual.GetComponent<FurnitureData>();
+            muebleActual
+                .GetComponent<FurnitureData>();
 
         int ancho = 1;
         int largo = 1;
 
         if (datos != null)
         {
-            ancho = datos.AnchoActual;
-            largo = datos.LargoActual;
+            ancho =
+                datos.AnchoActual;
+
+            largo =
+                datos.LargoActual;
         }
 
+        // Primero posicionamos correctamente
+        // el mueble en X y Z.
         Vector3 centroCasillaAncla =
             grid.ObtenerCentroCasilla(
                 casillaAnclaActual,
-                alturaPiso + alturaSobrePiso
+                muebleActual
+                    .transform.position.y
             );
 
         float desplazamientoX =
@@ -140,13 +187,117 @@ public class FurniturePlacement : MonoBehaviour
             ((largo - 1) *
             grid.tamanoCasilla) / 2f;
 
+        Vector3 posicion =
+            muebleActual.transform.position;
+
+        posicion.x =
+            centroCasillaAncla.x +
+            desplazamientoX;
+
+        posicion.z =
+            centroCasillaAncla.z +
+            desplazamientoZ;
+
         muebleActual.transform.position =
-            centroCasillaAncla +
-            new Vector3(
-                desplazamientoX,
-                0f,
-                desplazamientoZ
-            );
+            posicion;
+
+        // Después calculamos automáticamente
+        // dónde está la parte más baja
+        // del modelo 3D y la apoyamos
+        // exactamente sobre el piso.
+        AjustarAlturaAlPiso(
+            alturaPiso
+        );
+    }
+
+    private void AjustarAlturaAlPiso(
+        float alturaPiso)
+    {
+        if (muebleActual == null)
+            return;
+
+        Renderer[] renderers =
+            muebleActual
+                .GetComponentsInChildren<Renderer>();
+
+        if (
+            renderers == null ||
+            renderers.Length == 0
+        )
+        {
+            // Si por alguna razón el objeto
+            // no tiene Renderer, simplemente
+            // usamos la altura del piso.
+            Vector3 posicion =
+                muebleActual.transform.position;
+
+            posicion.y =
+                alturaPiso +
+                separacionPiso;
+
+            muebleActual.transform.position =
+                posicion;
+
+            return;
+        }
+
+        bool encontroRenderer =
+            false;
+
+        Bounds bounds =
+            new Bounds();
+
+        foreach (
+            Renderer renderer
+            in renderers
+        )
+        {
+            if (
+                renderer == null ||
+                !renderer.enabled
+            )
+            {
+                continue;
+            }
+
+            if (!encontroRenderer)
+            {
+                bounds =
+                    renderer.bounds;
+
+                encontroRenderer =
+                    true;
+            }
+            else
+            {
+                bounds.Encapsulate(
+                    renderer.bounds
+                );
+            }
+        }
+
+        if (!encontroRenderer)
+            return;
+
+        float parteMasBaja =
+            bounds.min.y;
+
+        float alturaObjetivo =
+            alturaPiso +
+            separacionPiso;
+
+        float diferencia =
+            alturaObjetivo -
+            parteMasBaja;
+
+        Vector3 posicionActual =
+            muebleActual.transform.position;
+
+        posicionActual.y +=
+            diferencia;
+
+        muebleActual.transform.position =
+            posicionActual;
     }
 
     private float ObtenerAlturaPiso()

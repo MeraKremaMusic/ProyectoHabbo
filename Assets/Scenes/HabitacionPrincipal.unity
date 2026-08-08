@@ -721,6 +721,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FurnitureCatalog
   muebles:
   - {fileID: 7994256470457331996, guid: a47df7211d39c464bb467697a00016a7, type: 3}
+  - {fileID: 21987929550664998, guid: b83219f0805d3d441bacf5896eed3aeb, type: 3}
 --- !u!114 &735926858
 MonoBehaviour:
   m_ObjectHideFlags: 0
