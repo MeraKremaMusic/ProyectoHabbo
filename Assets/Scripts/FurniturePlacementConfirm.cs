@@ -11,6 +11,9 @@ public class FurniturePlacementConfirm : MonoBehaviour
     public GridManager grid;
     public GridOccupancy occupancy;
 
+    private GameObject muebleDetectado;
+    private bool listoParaConfirmar;
+
     private void Update()
     {
         if (Mouse.current == null)
@@ -21,21 +24,44 @@ public class FurniturePlacementConfirm : MonoBehaviour
             !placement.EstaColocando
         )
         {
+            muebleDetectado = null;
+            listoParaConfirmar = false;
             return;
         }
 
-        if (
-            Mouse.current.leftButton
-                .wasPressedThisFrame
-        )
+        // Detectamos cuando acaba de aparecer un mueble nuevo.
+        // Esto evita que el clic del inventario también lo coloque.
+        if (muebleDetectado != placement.muebleActual)
+        {
+            muebleDetectado = placement.muebleActual;
+            listoParaConfirmar = false;
+            return;
+        }
 
+        // Esperamos a que el mouse esté completamente suelto
+        // antes de aceptar el próximo clic.
+        if (!listoParaConfirmar)
+        {
+            if (!Mouse.current.leftButton.isPressed)
+            {
+                listoParaConfirmar = true;
+            }
+
+            return;
+        }
+
+        // Los clics sobre la interfaz no colocan muebles.
         if (
-    EventSystem.current != null &&
-    EventSystem.current.IsPointerOverGameObject()
-)
-{
-    return;
-}
+            EventSystem.current != null &&
+            EventSystem.current.IsPointerOverGameObject()
+        )
+        {
+            return;
+        }
+
+        // SOLO aquí se coloca:
+        // con un nuevo clic izquierdo del usuario.
+        if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             IntentarColocar();
         }
@@ -45,7 +71,10 @@ public class FurniturePlacementConfirm : MonoBehaviour
     {
         placement.RefrescarPosicionDesdeMouse();
 
-        if (!validator.PuedeColocarActual())
+        if (
+            validator == null ||
+            !validator.PuedeColocarActual()
+        )
         {
             Debug.Log(
                 "No se puede colocar el mueble aqui."
@@ -93,6 +122,11 @@ public class FurniturePlacementConfirm : MonoBehaviour
 
         placement.FinalizarColocacion();
 
-        Debug.Log("Mueble colocado correctamente.");
+        muebleDetectado = null;
+        listoParaConfirmar = false;
+
+        Debug.Log(
+            "Mueble colocado correctamente."
+        );
     }
 }
