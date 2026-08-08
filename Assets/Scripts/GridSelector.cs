@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public class GridSelector : MonoBehaviour
 {
@@ -22,6 +23,14 @@ public class GridSelector : MonoBehaviour
     {
         if (Mouse.current == null)
             return;
+
+            if (
+    EventSystem.current != null &&
+    EventSystem.current.IsPointerOverGameObject()
+)
+{
+    return;
+}
 
         // Mientras estamos colocando un mueble,
         // el clic NO debe mover al jugador.

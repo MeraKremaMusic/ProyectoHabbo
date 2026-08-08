@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public class FurniturePlacementConfirm : MonoBehaviour
 {
@@ -27,6 +28,14 @@ public class FurniturePlacementConfirm : MonoBehaviour
             Mouse.current.leftButton
                 .wasPressedThisFrame
         )
+
+        if (
+    EventSystem.current != null &&
+    EventSystem.current.IsPointerOverGameObject()
+)
+{
+    return;
+}
         {
             IntentarColocar();
         }
