@@ -10,6 +10,7 @@ public class FurniturePlacementConfirm : MonoBehaviour
     public FurniturePreview preview;
     public GridManager grid;
     public GridOccupancy occupancy;
+    public FurnitureMove furnitureMove;
 
     private GameObject muebleDetectado;
     private bool listoParaConfirmar;
@@ -26,42 +27,57 @@ public class FurniturePlacementConfirm : MonoBehaviour
         {
             muebleDetectado = null;
             listoParaConfirmar = false;
+
             return;
         }
 
-        // Detectamos cuando acaba de aparecer un mueble nuevo.
-        // Esto evita que el clic del inventario también lo coloque.
-        if (muebleDetectado != placement.muebleActual)
+        // Detectamos cuándo acaba de aparecer
+        // un mueble nuevo en el cursor.
+        if (
+            muebleDetectado !=
+            placement.muebleActual
+        )
         {
-            muebleDetectado = placement.muebleActual;
-            listoParaConfirmar = false;
+            muebleDetectado =
+                placement.muebleActual;
+
+            listoParaConfirmar =
+                false;
+
             return;
         }
 
-        // Esperamos a que el mouse esté completamente suelto
-        // antes de aceptar el próximo clic.
+        // Evita que el clic utilizado para
+        // elegir el mueble también lo coloque.
         if (!listoParaConfirmar)
         {
-            if (!Mouse.current.leftButton.isPressed)
+            if (
+                !Mouse.current.leftButton
+                    .isPressed
+            )
             {
-                listoParaConfirmar = true;
+                listoParaConfirmar =
+                    true;
             }
 
             return;
         }
 
-        // Los clics sobre la interfaz no colocan muebles.
+        // No colocar muebles al hacer
+        // clic sobre la interfaz.
         if (
             EventSystem.current != null &&
-            EventSystem.current.IsPointerOverGameObject()
+            EventSystem.current
+                .IsPointerOverGameObject()
         )
         {
             return;
         }
 
-        // SOLO aquí se coloca:
-        // con un nuevo clic izquierdo del usuario.
-        if (Mouse.current.leftButton.wasPressedThisFrame)
+        if (
+            Mouse.current.leftButton
+                .wasPressedThisFrame
+        )
         {
             IntentarColocar();
         }
@@ -69,15 +85,21 @@ public class FurniturePlacementConfirm : MonoBehaviour
 
     private void IntentarColocar()
     {
-        placement.RefrescarPosicionDesdeMouse();
-
         if (
-            validator == null ||
-            !validator.PuedeColocarActual()
+            placement == null ||
+            validator == null
         )
         {
+            return;
+        }
+
+        placement.RefrescarPosicionDesdeMouse();
+
+        if (!validator.PuedeColocarActual())
+        {
             Debug.Log(
-                "No se puede colocar el mueble aqui."
+                "No se puede colocar " +
+                "el mueble aqui."
             );
 
             return;
@@ -95,6 +117,9 @@ public class FurniturePlacementConfirm : MonoBehaviour
         GameObject mueble =
             placement.muebleActual;
 
+        if (mueble == null)
+            return;
+
         GridObstacle obstaculo =
             mueble.GetComponent<GridObstacle>();
 
@@ -104,26 +129,50 @@ public class FurniturePlacementConfirm : MonoBehaviour
                 mueble.AddComponent<GridObstacle>();
         }
 
-        obstaculo.grid = grid;
-        obstaculo.occupancy = occupancy;
+        obstaculo.grid =
+            grid;
+
+        obstaculo.occupancy =
+            occupancy;
+
         obstaculo.datos =
             mueble.GetComponent<FurnitureData>();
 
-        obstaculo.registrarAlIniciar = false;
-        obstaculo.enabled = true;
+        obstaculo.registrarAlIniciar =
+            false;
 
-        if (!obstaculo.RegistrarDesdeAncla(ancla))
+        obstaculo.enabled =
+            true;
+
+        if (
+            !obstaculo.RegistrarDesdeAncla(
+                ancla
+            )
+        )
+        {
             return;
+        }
 
         if (preview != null)
         {
             preview.LimpiarPreview();
         }
 
+        // Si estábamos moviendo un mueble
+        // existente, confirmamos su nueva posición.
+        if (furnitureMove != null)
+        {
+            furnitureMove
+                .ConfirmarMovimiento(mueble);
+        }
+
         placement.FinalizarColocacion();
 
-        muebleDetectado = null;
-        listoParaConfirmar = false;
+        muebleDetectado =
+            null;
+
+        listoParaConfirmar =
+            false;
 
         Debug.Log(
             "Mueble colocado correctamente."

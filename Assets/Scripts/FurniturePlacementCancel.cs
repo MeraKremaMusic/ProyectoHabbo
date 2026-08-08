@@ -43,11 +43,14 @@ public class FurniturePlacementCancel : MonoBehaviour
             preview.LimpiarPreview();
         }
 
-        // Si era un mueble que ya existía,
-        // ESC lo devuelve a su posición original.
+        // CASO 1:
+        // El mueble ya existía y solamente
+        // lo estábamos cambiando de posición.
         if (
             furnitureMove != null &&
-            furnitureMove.EsMuebleEnMovimiento(mueble)
+            furnitureMove.EsMuebleEnMovimiento(
+                mueble
+            )
         )
         {
             furnitureMove.CancelarMovimiento();
@@ -57,8 +60,9 @@ public class FurniturePlacementCancel : MonoBehaviour
             return;
         }
 
-        // Si era un mueble NUEVO del inventario,
-        // ESC sí lo elimina.
+        // CASO 2:
+        // Es un mueble recién sacado
+        // del inventario.
         placement.FinalizarColocacion();
 
         Destroy(mueble);

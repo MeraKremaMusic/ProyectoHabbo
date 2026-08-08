@@ -576,6 +576,10 @@ GameObject:
   - component: {fileID: 735926855}
   - component: {fileID: 735926858}
   - component: {fileID: 735926859}
+  - component: {fileID: 735926860}
+  - component: {fileID: 735926861}
+  - component: {fileID: 735926862}
+  - component: {fileID: 735926863}
   m_Layer: 0
   m_Name: FurnitureManager
   m_TagString: Untagged
@@ -627,6 +631,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FurnitureRotation
   placement: {fileID: 735926849}
+  selection: {fileID: 0}
 --- !u!114 &735926852
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -644,6 +649,7 @@ MonoBehaviour:
   preview: {fileID: 735926853}
   grid: {fileID: 932419302}
   occupancy: {fileID: 932419303}
+  furnitureMove: {fileID: 735926861}
 --- !u!114 &735926853
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -729,6 +735,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FurniturePlacementCancel
   placement: {fileID: 735926849}
   preview: {fileID: 735926853}
+  furnitureMove: {fileID: 735926861}
 --- !u!114 &735926859
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -743,6 +750,60 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FurnitureInventoryAutoUI
   catalogo: {fileID: 735926857}
   spawner: {fileID: 735926856}
+--- !u!114 &735926860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 735926848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2bb6601d75d2894fa7dbf32afa233e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FurnitureSelection
+  placement: {fileID: 735926849}
+  muebleSeleccionado: {fileID: 0}
+--- !u!114 &735926861
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 735926848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f00aa85cdc1417242b14bbf933162a0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FurnitureMove
+  selection: {fileID: 735926860}
+  placement: {fileID: 735926849}
+--- !u!114 &735926862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 735926848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 715393b328755304ab8b4944a371ad85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FurnitureDelete
+  selection: {fileID: 735926860}
+  placement: {fileID: 735926849}
+--- !u!114 &735926863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 735926848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c5bad4ba53dffd47aee5869846eceed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FurnitureContextMenuAutoUI
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0

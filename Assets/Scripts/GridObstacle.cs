@@ -52,6 +52,8 @@ public class GridObstacle : MonoBehaviour
 
         LiberarCasillas();
 
+        // Primero comprobamos que todas
+        // las casillas estén dentro del grid.
         for (int x = 0; x < datos.AnchoActual; x++)
         {
             for (int z = 0; z < datos.LargoActual; z++)
@@ -67,6 +69,7 @@ public class GridObstacle : MonoBehaviour
             }
         }
 
+        // Registramos todas las casillas.
         for (int x = 0; x < datos.AnchoActual; x++)
         {
             for (int z = 0; z < datos.LargoActual; z++)
@@ -94,8 +97,13 @@ public class GridObstacle : MonoBehaviour
 
     public void LiberarCasillas()
     {
-        if (!registrado || occupancy == null)
+        if (
+            !registrado ||
+            occupancy == null
+        )
+        {
             return;
+        }
 
         foreach (
             Vector2Int casilla
@@ -109,10 +117,18 @@ public class GridObstacle : MonoBehaviour
         registrado = false;
     }
 
-    private void RegistrarDesdePosicionActual()
+    // IMPORTANTE:
+    // ahora es PUBLIC porque FurnitureMove
+    // necesita llamarlo al cancelar un movimiento.
+    public void RegistrarDesdePosicionActual()
     {
-        if (datos == null || grid == null)
+        if (
+            datos == null ||
+            grid == null
+        )
+        {
             return;
+        }
 
         Vector3 posicionAncla =
             transform.position;

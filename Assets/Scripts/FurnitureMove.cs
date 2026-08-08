@@ -43,7 +43,7 @@ public class FurnitureMove : MonoBehaviour
         }
     }
 
-    private void MoverSeleccionado()
+    public void MoverSeleccionado()
     {
         GameObject mueble =
             selection.muebleSeleccionado;
@@ -57,8 +57,8 @@ public class FurnitureMove : MonoBehaviour
         GridObstacle obstaculo =
             mueble.GetComponent<GridObstacle>();
 
-        // Guardamos exactamente cómo estaba.
-        muebleEnMovimiento = mueble;
+        muebleEnMovimiento =
+            mueble;
 
         posicionOriginal =
             mueble.transform.position;
@@ -72,7 +72,6 @@ public class FurnitureMove : MonoBehaviour
                 datos.rotado;
         }
 
-        // Liberamos las casillas antiguas.
         if (obstaculo != null)
         {
             obstaculo.LiberarCasillas();
@@ -108,7 +107,6 @@ public class FurnitureMove : MonoBehaviour
         GameObject mueble =
             muebleEnMovimiento;
 
-        // Volvemos exactamente al lugar anterior.
         mueble.transform.position =
             posicionOriginal;
 
@@ -124,7 +122,6 @@ public class FurnitureMove : MonoBehaviour
                 rotadoOriginal;
         }
 
-        // Volvemos a registrar las casillas originales.
         GridObstacle obstaculo =
             mueble.GetComponent<GridObstacle>();
 
@@ -152,14 +149,8 @@ public class FurnitureMove : MonoBehaviour
     private void LimpiarEstado()
     {
         muebleEnMovimiento = null;
-
-        posicionOriginal =
-            Vector3.zero;
-
-        rotacionOriginal =
-            Quaternion.identity;
-
-        rotadoOriginal =
-            false;
+        posicionOriginal = Vector3.zero;
+        rotacionOriginal = Quaternion.identity;
+        rotadoOriginal = false;
     }
 }
