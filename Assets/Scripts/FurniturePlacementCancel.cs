@@ -6,6 +6,7 @@ public class FurniturePlacementCancel : MonoBehaviour
     [Header("Referencias")]
     public FurniturePlacement placement;
     public FurniturePreview preview;
+    public FurnitureMove furnitureMove;
 
     private void Update()
     {
@@ -20,7 +21,10 @@ public class FurniturePlacementCancel : MonoBehaviour
             return;
         }
 
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (
+            Keyboard.current.escapeKey
+                .wasPressedThisFrame
+        )
         {
             Cancelar();
         }
@@ -39,10 +43,28 @@ public class FurniturePlacementCancel : MonoBehaviour
             preview.LimpiarPreview();
         }
 
+        // Si era un mueble que ya existía,
+        // ESC lo devuelve a su posición original.
+        if (
+            furnitureMove != null &&
+            furnitureMove.EsMuebleEnMovimiento(mueble)
+        )
+        {
+            furnitureMove.CancelarMovimiento();
+
+            placement.FinalizarColocacion();
+
+            return;
+        }
+
+        // Si era un mueble NUEVO del inventario,
+        // ESC sí lo elimina.
         placement.FinalizarColocacion();
 
         Destroy(mueble);
 
-        Debug.Log("Colocacion de mueble cancelada.");
+        Debug.Log(
+            "Colocacion de mueble nuevo cancelada."
+        );
     }
 }

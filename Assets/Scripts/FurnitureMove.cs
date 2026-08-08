@@ -7,6 +7,20 @@ public class FurnitureMove : MonoBehaviour
     public FurnitureSelection selection;
     public FurniturePlacement placement;
 
+    private GameObject muebleEnMovimiento;
+
+    private Vector3 posicionOriginal;
+    private Quaternion rotacionOriginal;
+    private bool rotadoOriginal;
+
+    public bool EstaMoviendoExistente
+    {
+        get
+        {
+            return muebleEnMovimiento != null;
+        }
+    }
+
     private void Update()
     {
         if (Keyboard.current == null)
@@ -37,28 +51,115 @@ public class FurnitureMove : MonoBehaviour
         if (mueble == null)
             return;
 
+        FurnitureData datos =
+            mueble.GetComponent<FurnitureData>();
+
         GridObstacle obstaculo =
             mueble.GetComponent<GridObstacle>();
 
-        // Primero liberamos las casillas antiguas.
+        // Guardamos exactamente cómo estaba.
+        muebleEnMovimiento = mueble;
+
+        posicionOriginal =
+            mueble.transform.position;
+
+        rotacionOriginal =
+            mueble.transform.rotation;
+
+        if (datos != null)
+        {
+            rotadoOriginal =
+                datos.rotado;
+        }
+
+        // Liberamos las casillas antiguas.
         if (obstaculo != null)
         {
             obstaculo.LiberarCasillas();
         }
 
-        // El mismo mueble vuelve al sistema
-        // de colocacion.
-        placement.muebleActual = mueble;
+        placement.muebleActual =
+            mueble;
 
-        // Ya no está seleccionado como mueble colocado.
-        selection.muebleSeleccionado = null;
+        selection.muebleSeleccionado =
+            null;
 
-        // Lo colocamos inmediatamente bajo el mouse.
         placement.RefrescarPosicionDesdeMouse();
 
         Debug.Log(
             "Moviendo mueble: " +
             mueble.name
         );
+    }
+
+    public bool EsMuebleEnMovimiento(
+        GameObject mueble)
+    {
+        return
+            muebleEnMovimiento != null &&
+            muebleEnMovimiento == mueble;
+    }
+
+    public void CancelarMovimiento()
+    {
+        if (muebleEnMovimiento == null)
+            return;
+
+        GameObject mueble =
+            muebleEnMovimiento;
+
+        // Volvemos exactamente al lugar anterior.
+        mueble.transform.position =
+            posicionOriginal;
+
+        mueble.transform.rotation =
+            rotacionOriginal;
+
+        FurnitureData datos =
+            mueble.GetComponent<FurnitureData>();
+
+        if (datos != null)
+        {
+            datos.rotado =
+                rotadoOriginal;
+        }
+
+        // Volvemos a registrar las casillas originales.
+        GridObstacle obstaculo =
+            mueble.GetComponent<GridObstacle>();
+
+        if (obstaculo != null)
+        {
+            obstaculo.RegistrarDesdePosicionActual();
+        }
+
+        LimpiarEstado();
+
+        Debug.Log(
+            "Movimiento cancelado. Mueble restaurado."
+        );
+    }
+
+    public void ConfirmarMovimiento(
+        GameObject mueble)
+    {
+        if (!EsMuebleEnMovimiento(mueble))
+            return;
+
+        LimpiarEstado();
+    }
+
+    private void LimpiarEstado()
+    {
+        muebleEnMovimiento = null;
+
+        posicionOriginal =
+            Vector3.zero;
+
+        rotacionOriginal =
+            Quaternion.identity;
+
+        rotadoOriginal =
+            false;
     }
 }
