@@ -158,6 +158,14 @@ public sealed class FurniturePreviewRenderer :
             return;
         }
 
+        // Al cambiar rápidamente de tarjeta, primero soltamos
+        // explícitamente el preview anterior antes de asignar el nuevo.
+        prefabAnimado =
+            null;
+
+        texturaAnimada =
+            null;
+
         LimpiarModelo();
 
         prefabAnimado =
@@ -200,16 +208,9 @@ public sealed class FurniturePreviewRenderer :
             return;
         }
 
-        if (
-            modeloActivo != null &&
-            texturaAnimada != null
-        )
-        {
-            RenderizarActual(
-                texturaAnimada
-            );
-        }
-
+        // No renderizamos otro frame al salir.
+        // La RenderTexture conserva el último frame correcto y evitamos
+        // que un cambio muy rápido de hover mezcle visualmente previews.
         prefabAnimado =
             null;
 

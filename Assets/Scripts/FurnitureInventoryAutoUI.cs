@@ -417,7 +417,6 @@ public class FurnitureInventoryAutoUI :
         CrearCabecera();
         CrearBuscador();
         CrearCategorias();
-        CrearSeparador();
         CrearScroll();
         CrearPie();
     }
@@ -1249,53 +1248,6 @@ public class FurnitureInventoryAutoUI :
         }
     }
 
-
-    private void CrearSeparador()
-    {
-        GameObject objeto =
-            CrearObjetoUI(
-                "SeparadorCategorias",
-                panel.transform
-            );
-
-        RectTransform r =
-            objeto.GetComponent<RectTransform>();
-
-        r.anchorMin =
-            new Vector2(0f, 1f);
-
-        r.anchorMax =
-            new Vector2(1f, 1f);
-
-        r.pivot =
-            new Vector2(0.5f, 1f);
-
-        r.anchoredPosition =
-            new Vector2(
-                0f,
-                -258f
-            );
-
-        r.sizeDelta =
-            new Vector2(
-                -58f,
-                1f
-            );
-
-        Image linea =
-            objeto.AddComponent<Image>();
-
-        linea.color =
-            new Color32(
-                255,
-                255,
-                255,
-                14
-            );
-
-        linea.raycastTarget =
-            false;
-    }
 
     // =====================================================
     // SCROLL

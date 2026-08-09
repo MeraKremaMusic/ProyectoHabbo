@@ -1,14 +1,21 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
 public sealed class FurniturePreview3DUI :
     MonoBehaviour
 {
+    private const float RetrasoHover =
+        0.14f;
+
     private GameObject prefab;
     private RawImage imagen;
     private RenderTexture textura;
 
     private bool listo;
+    private bool hoverActivo;
+
+    private Coroutine rutinaHover;
 
     public bool TienePreview =>
         listo &&
@@ -83,25 +90,30 @@ public sealed class FurniturePreview3DUI :
 
     public void ActivarHover()
     {
-        if (
-            !TienePreview ||
-            FurniturePreviewRenderer
-                .Instance == null
-        )
-        {
+        if (!TienePreview)
             return;
-        }
 
-        FurniturePreviewRenderer
-            .Instance
-            .IniciarRotacion(
-                prefab,
-                textura
+        hoverActivo =
+            true;
+
+        CancelarRutinaHover();
+
+        // No arrancamos la cámara compartida inmediatamente.
+        // Esto evita que al cruzar muchas tarjetas rápidamente
+        // los modelos puedan verse durante un instante en otra card.
+        rutinaHover =
+            StartCoroutine(
+                ActivarRotacionConRetraso()
             );
     }
 
     public void DesactivarHover()
     {
+        hoverActivo =
+            false;
+
+        CancelarRutinaHover();
+
         if (
             textura == null ||
             FurniturePreviewRenderer
@@ -114,6 +126,54 @@ public sealed class FurniturePreview3DUI :
         FurniturePreviewRenderer
             .Instance
             .DetenerRotacion(
+                textura
+            );
+    }
+
+    private IEnumerator ActivarRotacionConRetraso()
+    {
+        float transcurrido =
+            0f;
+
+        while (
+            transcurrido <
+            RetrasoHover
+        )
+        {
+            if (
+                !hoverActivo ||
+                !isActiveAndEnabled
+            )
+            {
+                rutinaHover =
+                    null;
+
+                yield break;
+            }
+
+            transcurrido +=
+                Time.unscaledDeltaTime;
+
+            yield return null;
+        }
+
+        rutinaHover =
+            null;
+
+        if (
+            !hoverActivo ||
+            !TienePreview ||
+            FurniturePreviewRenderer
+                .Instance == null
+        )
+        {
+            yield break;
+        }
+
+        FurniturePreviewRenderer
+            .Instance
+            .IniciarRotacion(
+                prefab,
                 textura
             );
     }
@@ -137,6 +197,19 @@ public sealed class FurniturePreview3DUI :
             );
     }
 
+    private void CancelarRutinaHover()
+    {
+        if (rutinaHover == null)
+            return;
+
+        StopCoroutine(
+            rutinaHover
+        );
+
+        rutinaHover =
+            null;
+    }
+
     private void OnEnable()
     {
         if (
@@ -146,6 +219,11 @@ public sealed class FurniturePreview3DUI :
         {
             SolicitarRenderInicial();
         }
+    }
+
+    private void OnDisable()
+    {
+        DesactivarHover();
     }
 
     private void OnDestroy()
