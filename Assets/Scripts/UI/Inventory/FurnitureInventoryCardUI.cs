@@ -16,20 +16,20 @@ public sealed class FurnitureInventoryCardUI :
     private Outline borde;
     private RectTransform rect;
 
-    private FurniturePreview3DUI
-        preview3D;
-
+    private FurniturePreview3DUI preview3D;
     private Action accionSeleccionar;
 
     private bool seleccionada;
+    private bool hover;
 
-    private Color colorNormal;
-    private Color colorHover;
+    private readonly Color colorNormal =
+        new Color32(27, 31, 37, 255);
+
+    private readonly Color colorHover =
+        new Color32(32, 37, 44, 255);
 
     private Vector3 escalaObjetivo =
         Vector3.one;
-
-    private bool hover;
 
     public void Construir(
         GameObject prefab,
@@ -51,18 +51,10 @@ public sealed class FurnitureInventoryCardUI :
             gameObject.AddComponent<Image>();
 
         fondo.sprite =
-            UIRoundedSpriteFactory.Obtener(
-                GameUITheme.RadioTarjeta
-            );
+            UIRoundedSpriteFactory.Obtener(17f);
 
         fondo.type =
             Image.Type.Sliced;
-
-        colorNormal =
-            GameUITheme.Tarjeta;
-
-        colorHover =
-            GameUITheme.TarjetaHover;
 
         fondo.color =
             colorNormal;
@@ -71,14 +63,15 @@ public sealed class FurnitureInventoryCardUI :
             gameObject.AddComponent<Outline>();
 
         borde.effectColor =
-            GameUITheme.BordeSuave;
+            new Color32(
+                255,
+                255,
+                255,
+                18
+            );
 
         borde.effectDistance =
             new Vector2(1f, -1f);
-
-        CrearEtiquetaCategoria(
-            categoria
-        );
 
         CrearCantidad(
             cantidad
@@ -88,15 +81,11 @@ public sealed class FurnitureInventoryCardUI :
             prefab
         );
 
-        CrearSeparador();
-
         CrearNombre(
             nombre
         );
 
-        CrearMeta(
-            tamano
-        );
+        AplicarEstadoVisual();
     }
 
     private void Update()
@@ -109,7 +98,7 @@ public sealed class FurnitureInventoryCardUI :
                 rect.localScale,
                 escalaObjetivo,
                 Time.unscaledDeltaTime *
-                15f
+                16f
             );
     }
 
@@ -133,24 +122,16 @@ public sealed class FurnitureInventoryCardUI :
             Vector2.one;
 
         r.offsetMin =
-            new Vector2(
-                -4f,
-                -9f
-            );
+            new Vector2(-3f, -7f);
 
         r.offsetMax =
-            new Vector2(
-                4f,
-                -1f
-            );
+            new Vector2(3f, -1f);
 
         Image imagen =
             sombra.AddComponent<Image>();
 
         imagen.sprite =
-            UIRoundedSpriteFactory.Obtener(
-                GameUITheme.RadioTarjeta
-            );
+            UIRoundedSpriteFactory.Obtener(17f);
 
         imagen.type =
             Image.Type.Sliced;
@@ -160,67 +141,11 @@ public sealed class FurnitureInventoryCardUI :
                 0,
                 0,
                 0,
-                82
+                72
             );
 
         imagen.raycastTarget =
             false;
-    }
-
-    private void CrearEtiquetaCategoria(
-        string categoria)
-    {
-        GameObject objeto =
-            CrearObjeto(
-                "Categoria",
-                transform
-            );
-
-        RectTransform r =
-            objeto.GetComponent<RectTransform>();
-
-        r.anchorMin =
-            new Vector2(0f, 1f);
-
-        r.anchorMax =
-            new Vector2(0f, 1f);
-
-        r.pivot =
-            new Vector2(0f, 1f);
-
-        r.anchoredPosition =
-            new Vector2(13f, -12f);
-
-        r.sizeDelta =
-            new Vector2(112f, 27f);
-
-        Image bg =
-            objeto.AddComponent<Image>();
-
-        bg.sprite =
-            UIRoundedSpriteFactory.Obtener(
-                12f
-            );
-
-        bg.type =
-            Image.Type.Sliced;
-
-        bg.color =
-            GameUITheme.EsmeraldaSuave;
-
-        TMP_Text texto =
-            CrearTexto(
-                objeto.transform,
-                NombreCategoria(
-                    categoria
-                ),
-                11.5f,
-                FontStyles.Bold,
-                TextAlignmentOptions.Center
-            );
-
-        texto.color =
-            GameUITheme.Esmeralda;
     }
 
     private void CrearCantidad(
@@ -245,41 +170,59 @@ public sealed class FurnitureInventoryCardUI :
             new Vector2(1f, 1f);
 
         r.anchoredPosition =
-            new Vector2(-12f, -12f);
+            new Vector2(
+                -10f,
+                -10f
+            );
 
         r.sizeDelta =
-            new Vector2(48f, 28f);
+            new Vector2(
+                48f,
+                30f
+            );
 
         Image bg =
             objeto.AddComponent<Image>();
 
         bg.sprite =
-            UIRoundedSpriteFactory.Obtener(
-                12f
-            );
+            UIRoundedSpriteFactory.Obtener(13f);
 
         bg.type =
             Image.Type.Sliced;
 
         bg.color =
             new Color32(
-                255,
-                255,
-                255,
-                18
+                9,
+                11,
+                14,
+                235
             );
+
+        Outline outline =
+            objeto.AddComponent<Outline>();
+
+        outline.effectColor =
+            new Color32(
+                255,
+                255,
+                255,
+                24
+            );
+
+        outline.effectDistance =
+            new Vector2(1f, -1f);
 
         TMP_Text texto =
             CrearTexto(
                 objeto.transform,
                 "x" + cantidad,
-                12.5f,
+                14f,
                 FontStyles.Bold,
                 TextAlignmentOptions.Center
             );
 
         texto.color =
-            GameUITheme.TextoPrincipal;
+            Color.white;
     }
 
     private void CrearPreview(
@@ -292,85 +235,42 @@ public sealed class FurnitureInventoryCardUI :
             );
 
         RectTransform r =
-            contenedor.GetComponent<
-                RectTransform>();
+            contenedor.GetComponent<RectTransform>();
 
         r.anchorMin =
-            new Vector2(0.5f, 1f);
+            new Vector2(0f, 0f);
 
         r.anchorMax =
-            new Vector2(0.5f, 1f);
+            new Vector2(1f, 1f);
 
-        r.pivot =
-            new Vector2(0.5f, 1f);
+        r.offsetMin =
+            new Vector2(
+                13f,
+                55f
+            );
 
-        r.anchoredPosition =
-            new Vector2(0f, -48f);
-
-        r.sizeDelta =
-            new Vector2(190f, 112f);
+        r.offsetMax =
+            new Vector2(
+                -13f,
+                -18f
+            );
 
         Image bg =
             contenedor.AddComponent<Image>();
 
         bg.sprite =
-            UIRoundedSpriteFactory.Obtener(
-                18f
-            );
+            UIRoundedSpriteFactory.Obtener(13f);
 
         bg.type =
             Image.Type.Sliced;
 
         bg.color =
             new Color32(
-                17,
-                20,
+                21,
                 25,
+                30,
                 255
             );
-
-        GameObject brillo =
-            CrearObjeto(
-                "BrilloPreview",
-                contenedor.transform
-            );
-
-        RectTransform rBrillo =
-            brillo.GetComponent<RectTransform>();
-
-        rBrillo.anchorMin =
-            Vector2.zero;
-
-        rBrillo.anchorMax =
-            Vector2.one;
-
-        rBrillo.offsetMin =
-            new Vector2(7f, 7f);
-
-        rBrillo.offsetMax =
-            new Vector2(-7f, -7f);
-
-        Image brilloImagen =
-            brillo.AddComponent<Image>();
-
-        brilloImagen.sprite =
-            UIRoundedSpriteFactory.Obtener(
-                16f
-            );
-
-        brilloImagen.type =
-            Image.Type.Sliced;
-
-        brilloImagen.color =
-            new Color32(
-                34,
-                197,
-                94,
-                10
-            );
-
-        brilloImagen.raycastTarget =
-            false;
 
         GameObject render =
             CrearObjeto(
@@ -388,10 +288,10 @@ public sealed class FurnitureInventoryCardUI :
             Vector2.one;
 
         rRender.offsetMin =
-            new Vector2(7f, 7f);
+            new Vector2(5f, 5f);
 
         rRender.offsetMax =
-            new Vector2(-7f, -7f);
+            new Vector2(-5f, -5f);
 
         RawImage raw =
             render.AddComponent<RawImage>();
@@ -422,8 +322,7 @@ public sealed class FurnitureInventoryCardUI :
                 );
 
             RectTransform rFallback =
-                fallback.GetComponent<
-                    RectTransform>();
+                fallback.GetComponent<RectTransform>();
 
             rFallback.anchorMin =
                 new Vector2(0.5f, 0.5f);
@@ -435,7 +334,7 @@ public sealed class FurnitureInventoryCardUI :
                 new Vector2(0.5f, 0.5f);
 
             rFallback.sizeDelta =
-                new Vector2(45f, 45f);
+                new Vector2(48f, 48f);
 
             Image icono =
                 fallback.AddComponent<Image>();
@@ -453,47 +352,6 @@ public sealed class FurnitureInventoryCardUI :
         }
     }
 
-    private void CrearSeparador()
-    {
-        GameObject objeto =
-            CrearObjeto(
-                "Separador",
-                transform
-            );
-
-        RectTransform r =
-            objeto.GetComponent<RectTransform>();
-
-        r.anchorMin =
-            new Vector2(0f, 1f);
-
-        r.anchorMax =
-            new Vector2(1f, 1f);
-
-        r.pivot =
-            new Vector2(0.5f, 1f);
-
-        r.anchoredPosition =
-            new Vector2(0f, -169f);
-
-        r.sizeDelta =
-            new Vector2(-26f, 1f);
-
-        Image imagen =
-            objeto.AddComponent<Image>();
-
-        imagen.color =
-            new Color32(
-                255,
-                255,
-                255,
-                18
-            );
-
-        imagen.raycastTarget =
-            false;
-    }
-
     private void CrearNombre(
         string nombre)
     {
@@ -501,9 +359,9 @@ public sealed class FurnitureInventoryCardUI :
             CrearTexto(
                 transform,
                 nombre,
-                17f,
+                16f,
                 FontStyles.Bold,
-                TextAlignmentOptions.Left
+                TextAlignmentOptions.Center
             );
 
         texto.color =
@@ -522,10 +380,16 @@ public sealed class FurnitureInventoryCardUI :
             new Vector2(0.5f, 0f);
 
         r.anchoredPosition =
-            new Vector2(0f, 42f);
+            new Vector2(
+                0f,
+                12f
+            );
 
         r.sizeDelta =
-            new Vector2(-28f, 28f);
+            new Vector2(
+                -24f,
+                32f
+            );
 
         texto.enableAutoSizing =
             true;
@@ -534,54 +398,11 @@ public sealed class FurnitureInventoryCardUI :
             12f;
 
         texto.fontSizeMax =
-            17f;
+            16f;
 
         texto.overflowMode =
             TextOverflowModes.Ellipsis;
     }
-
-    private void CrearMeta(
-        string tamano)
-    {
-        string contenido =
-            string.IsNullOrWhiteSpace(
-                tamano
-            )
-                ? "Mueble"
-                : tamano +
-                    " casillas";
-
-        TMP_Text texto =
-            CrearTexto(
-                transform,
-                contenido,
-                12.5f,
-                FontStyles.Normal,
-                TextAlignmentOptions.Left
-            );
-
-        texto.color =
-            GameUITheme.TextoSecundario;
-
-        RectTransform r =
-            texto.rectTransform;
-
-        r.anchorMin =
-            new Vector2(0f, 0f);
-
-        r.anchorMax =
-            new Vector2(1f, 0f);
-
-        r.pivot =
-            new Vector2(0.5f, 0f);
-
-        r.anchoredPosition =
-            new Vector2(0f, 17f);
-
-        r.sizeDelta =
-            new Vector2(-28f, 22f);
-    }
-
 
     public void OnPointerEnter(
         PointerEventData eventData)
@@ -589,44 +410,14 @@ public sealed class FurnitureInventoryCardUI :
         hover =
             true;
 
-        if (fondo != null)
-        {
-            fondo.color =
-                seleccionada
-                    ? new Color32(
-                        27,
-                        58,
-                        45,
-                        255
-                    )
-                    : colorHover;
-        }
-
-        if (borde != null)
-        {
-            borde.effectColor =
-                new Color32(
-                    34,
-                    197,
-                    94,
-                    seleccionada
-                        ? (byte)230
-                        : (byte)110
-                );
-
-            borde.effectDistance =
-                new Vector2(
-                    seleccionada ? 3f : 2f,
-                    seleccionada ? -3f : -2f
-                );
-        }
-
         escalaObjetivo =
             new Vector3(
-                1.022f,
-                1.022f,
+                1.018f,
+                1.018f,
                 1f
             );
+
+        AplicarEstadoVisual();
 
         preview3D?.ActivarHover();
     }
@@ -637,21 +428,36 @@ public sealed class FurnitureInventoryCardUI :
         hover =
             false;
 
-        AplicarEstadoVisual();
-
         escalaObjetivo =
             Vector3.one;
+
+        AplicarEstadoVisual();
 
         preview3D?.DesactivarHover();
     }
 
-    public void EstablecerSeleccionada(
-        bool valor)
+    public void OnPointerDown(
+        PointerEventData eventData)
     {
-        seleccionada =
-            valor;
+        escalaObjetivo =
+            new Vector3(
+                0.988f,
+                0.988f,
+                1f
+            );
+    }
 
-        AplicarEstadoVisual();
+    public void OnPointerUp(
+        PointerEventData eventData)
+    {
+        escalaObjetivo =
+            hover
+                ? new Vector3(
+                    1.018f,
+                    1.018f,
+                    1f
+                )
+                : Vector3.one;
     }
 
     public void OnPointerClick(
@@ -668,6 +474,15 @@ public sealed class FurnitureInventoryCardUI :
         accionSeleccionar?.Invoke();
     }
 
+    public void EstablecerSeleccionada(
+        bool valor)
+    {
+        seleccionada =
+            valor;
+
+        AplicarEstadoVisual();
+    }
+
     private void AplicarEstadoVisual()
     {
         if (fondo != null)
@@ -675,9 +490,9 @@ public sealed class FurnitureInventoryCardUI :
             fondo.color =
                 seleccionada
                     ? new Color32(
-                        25,
-                        52,
-                        42,
+                        24,
+                        47,
+                        39,
                         255
                     )
                     : (
@@ -692,72 +507,32 @@ public sealed class FurnitureInventoryCardUI :
             borde.effectColor =
                 seleccionada
                     ? new Color32(
-                        34,
-                        197,
-                        94,
+                        35,
+                        214,
+                        139,
                         230
                     )
                     : (
                         hover
                             ? new Color32(
-                                34,
-                                197,
-                                94,
-                                110
+                                255,
+                                255,
+                                255,
+                                38
                             )
-                            : GameUITheme.BordeSuave
+                            : new Color32(
+                                255,
+                                255,
+                                255,
+                                18
+                            )
                     );
 
             borde.effectDistance =
                 seleccionada
-                    ? new Vector2(3f, -3f)
-                    : (
-                        hover
-                            ? new Vector2(2f, -2f)
-                            : new Vector2(1f, -1f)
-                    );
+                    ? new Vector2(2f, -2f)
+                    : new Vector2(1f, -1f);
         }
-    }
-
-    public void OnPointerDown(
-        PointerEventData eventData)
-    {
-        escalaObjetivo =
-            new Vector3(
-                0.985f,
-                0.985f,
-                1f
-            );
-    }
-
-    public void OnPointerUp(
-        PointerEventData eventData)
-    {
-        escalaObjetivo =
-            hover
-                ? new Vector3(
-                    1.022f,
-                    1.022f,
-                    1f
-                )
-                : Vector3.one;
-    }
-
-    private string NombreCategoria(
-        string categoria)
-    {
-        if (
-            string.IsNullOrWhiteSpace(
-                categoria
-            )
-        )
-        {
-            return "MUEBLE";
-        }
-
-        return categoria
-            .Trim()
-            .ToUpperInvariant();
     }
 
     private GameObject CrearObjeto(
