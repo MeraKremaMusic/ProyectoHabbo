@@ -1329,7 +1329,7 @@ public class FurnitureInventoryAutoUI :
         rScroll.offsetMax =
             new Vector2(
                 -29f,
-                -274f
+                -258f
             );
 
         ScrollRect scroll =
@@ -1407,16 +1407,18 @@ public class FurnitureInventoryAutoUI :
             contenidoObjeto.AddComponent<
                 GridLayoutGroup>();
 
+        // Cinco muebles visibles por fila.
+        // El ContentSizeFitter mantiene tantas filas como sean necesarias.
         grid.cellSize =
             new Vector2(
-                245f,
-                260f
+                142f,
+                190f
             );
 
         grid.spacing =
             new Vector2(
-                18f,
-                18f
+                10f,
+                12f
             );
 
         grid.padding =
@@ -1432,7 +1434,7 @@ public class FurnitureInventoryAutoUI :
                 .FixedColumnCount;
 
         grid.constraintCount =
-            3;
+            5;
 
         ContentSizeFitter fitter =
             contenidoObjeto.AddComponent<

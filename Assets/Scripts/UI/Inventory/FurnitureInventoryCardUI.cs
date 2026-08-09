@@ -183,8 +183,8 @@ public sealed class FurnitureInventoryCardUI :
 
         r.sizeDelta =
             new Vector2(
-                48f,
-                30f
+                40f,
+                26f
             );
 
         Image bg =
@@ -222,7 +222,7 @@ public sealed class FurnitureInventoryCardUI :
             CrearTexto(
                 objeto.transform,
                 "x" + cantidad,
-                14f,
+                12.5f,
                 FontStyles.Bold,
                 TextAlignmentOptions.Center
             );
@@ -251,14 +251,14 @@ public sealed class FurnitureInventoryCardUI :
 
         r.offsetMin =
             new Vector2(
-                13f,
-                55f
+                7f,
+                43f
             );
 
         r.offsetMax =
             new Vector2(
-                -13f,
-                -18f
+                -7f,
+                -8f
             );
 
         fondoPreview =
@@ -270,9 +270,13 @@ public sealed class FurnitureInventoryCardUI :
         fondoPreview.type =
             Image.Type.Sliced;
 
-        // El contenedor del furni comparte el color de la tarjeta.
+        // El contenedor del preview no dibuja un segundo fondo.
+        // Así visualmente existe UNA sola superficie: la tarjeta.
         fondoPreview.color =
-            colorNormal;
+            Color.clear;
+
+        fondoPreview.raycastTarget =
+            false;
 
         GameObject render =
             CrearObjeto(
@@ -361,7 +365,7 @@ public sealed class FurnitureInventoryCardUI :
             CrearTexto(
                 transform,
                 nombre,
-                16f,
+                13.5f,
                 FontStyles.Bold,
                 TextAlignmentOptions.Center
             );
@@ -397,10 +401,10 @@ public sealed class FurnitureInventoryCardUI :
             true;
 
         texto.fontSizeMin =
-            12f;
+            10f;
 
         texto.fontSizeMax =
-            16f;
+            13.5f;
 
         texto.overflowMode =
             TextOverflowModes.Ellipsis;
@@ -510,11 +514,13 @@ public sealed class FurnitureInventoryCardUI :
 
         if (fondoPreview != null)
         {
+            // Transparente en todos los estados para que el preview
+            // herede visualmente el color de la tarjeta.
             fondoPreview.color =
-                colorActual;
+                Color.clear;
         }
 
-        if (borde != null)
+if (borde != null)
         {
             borde.effectColor =
                 seleccionada

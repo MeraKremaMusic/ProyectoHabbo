@@ -689,6 +689,37 @@ public sealed class FurniturePreviewRenderer :
 
         try
         {
+            camara.clearFlags =
+                CameraClearFlags.SolidColor;
+
+            camara.backgroundColor =
+                new Color(
+                    0f,
+                    0f,
+                    0f,
+                    0f
+                );
+
+            RenderTexture activoAnterior =
+                RenderTexture.active;
+
+            RenderTexture.active =
+                destino;
+
+            GL.Clear(
+                true,
+                true,
+                new Color(
+                    0f,
+                    0f,
+                    0f,
+                    0f
+                )
+            );
+
+            RenderTexture.active =
+                activoAnterior;
+
             RenderSettings.ambientMode =
                 AmbientMode.Trilight;
 
