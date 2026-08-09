@@ -10,10 +10,6 @@ public static class NetworkBootstrap
         GameObject objeto;
 
 
-        // =====================================================
-        // CREAR NETWORK MANAGER
-        // =====================================================
-
         if (
             NakamaConnection.Instance ==
             null
@@ -44,6 +40,9 @@ public static class NetworkBootstrap
                 FurniturePurchaseService>();
 
             objeto.AddComponent<
+                PlayerInventoryService>();
+
+            objeto.AddComponent<
                 GameFlowService>();
 
             objeto.AddComponent<
@@ -64,19 +63,11 @@ public static class NetworkBootstrap
         }
 
 
-        // =====================================================
-        // REUTILIZAR NETWORK MANAGER
-        // =====================================================
-
         objeto =
             NakamaConnection
                 .Instance
                 .gameObject;
 
-
-        // =====================================================
-        // AUTENTICACION
-        // =====================================================
 
         if (
             objeto.GetComponent<
@@ -89,10 +80,6 @@ public static class NetworkBootstrap
         }
 
 
-        // =====================================================
-        // PERFIL
-        // =====================================================
-
         if (
             objeto.GetComponent<
                 NakamaPlayerProfileService>() ==
@@ -103,10 +90,6 @@ public static class NetworkBootstrap
                 NakamaPlayerProfileService>();
         }
 
-
-        // =====================================================
-        // MONEDAS
-        // =====================================================
 
         if (
             objeto.GetComponent<
@@ -119,10 +102,6 @@ public static class NetworkBootstrap
         }
 
 
-        // =====================================================
-        // CATALOGO DE TIENDA
-        // =====================================================
-
         if (
             objeto.GetComponent<
                 FurnitureShopCatalogService>() ==
@@ -133,10 +112,6 @@ public static class NetworkBootstrap
                 FurnitureShopCatalogService>();
         }
 
-
-        // =====================================================
-        // COMPRAS
-        // =====================================================
 
         if (
             objeto.GetComponent<
@@ -149,9 +124,16 @@ public static class NetworkBootstrap
         }
 
 
-        // =====================================================
-        // FLUJO
-        // =====================================================
+        if (
+            objeto.GetComponent<
+                PlayerInventoryService>() ==
+            null
+        )
+        {
+            objeto.AddComponent<
+                PlayerInventoryService>();
+        }
+
 
         if (
             objeto.GetComponent<
@@ -163,10 +145,6 @@ public static class NetworkBootstrap
                 GameFlowService>();
         }
 
-
-        // =====================================================
-        // NAVEGACION
-        // =====================================================
 
         if (
             objeto.GetComponent<
