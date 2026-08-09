@@ -1,19 +1,35 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class FurnitureInventoryAutoUI :
     MonoBehaviour
 {
-    private Canvas canvas;
+    private sealed class GrupoInventario
+    {
+        public string ProductId;
+        public string Nombre;
+        public string Categoria;
+        public string Tamano;
+        public List<FurnitureInventoryItemData>
+            Items =
+                new List<FurnitureInventoryItemData>();
+    }
 
+    private Canvas canvas;
     private GameObject panel;
+    private CanvasGroup panelCanvasGroup;
+    private RectTransform panelRect;
 
     private Transform contenido;
-
     private TMP_Text textoEstado;
-
+    private TMP_Text textoContador;
+    private TMP_InputField buscador;
+    private Transform contenedorCategorias;
 
     private PlayerInventoryService
         inventoryService;
@@ -21,98 +37,55 @@ public class FurnitureInventoryAutoUI :
     private FurnitureInventorySpawner
         inventorySpawner;
 
-
     private bool conectado;
 
+    private string categoriaActual =
+        "Todos";
 
-    private readonly Color colorPanel =
-        new Color32(
-            24,
-            27,
-            34,
-            250
-        );
+    private string busquedaActual =
+        "";
 
+    private readonly List<GrupoInventario>
+        gruposActuales =
+            new List<GrupoInventario>();
 
-    private readonly Color colorTarjeta =
-        new Color32(
-            47,
-            52,
-            63,
-            255
-        );
+    private readonly Dictionary<
+        string,
+        Button>
+        botonesCategorias =
+            new Dictionary<string, Button>(
+                StringComparer.OrdinalIgnoreCase
+            );
 
-
-    private readonly Color colorTarjetaHover =
-        new Color32(
-            65,
-            72,
-            87,
-            255
-        );
-
-
-    private readonly Color colorBoton =
-        new Color32(
-            35,
-            39,
-            48,
-            255
-        );
-
-
-    private readonly Color verde =
-        new Color32(
-            39,
-            174,
-            112,
-            255
-        );
-
-
-    private readonly Color gris =
-        new Color32(
-            180,
-            185,
-            195,
-            255
-        );
-
+    private Coroutine animacionPanel;
 
     private void Start()
     {
         inventorySpawner =
-            Object.FindAnyObjectByType<
+            UnityEngine.Object.FindAnyObjectByType<
                 FurnitureInventorySpawner>();
 
-
+        CrearEventSystemSiHaceFalta();
         CrearInterfaz();
-
-        CerrarInventario();
-
+        CerrarInventarioInmediato();
         IntentarConectarInventario();
     }
-
 
     private void Update()
     {
         if (!conectado)
-        {
             IntentarConectarInventario();
-        }
-
 
         if (inventorySpawner == null)
         {
             inventorySpawner =
-                Object.FindAnyObjectByType<
+                UnityEngine.Object.FindAnyObjectByType<
                     FurnitureInventorySpawner>();
         }
     }
 
-
     // =====================================================
-    // INVENTARIO DE NAKAMA
+    // CONEXION INVENTARIO
     // =====================================================
 
     private void IntentarConectarInventario()
@@ -120,23 +93,18 @@ public class FurnitureInventoryAutoUI :
         if (conectado)
             return;
 
-
         inventoryService =
             PlayerInventoryService.Instance;
 
-
         if (inventoryService == null)
             return;
-
 
         inventoryService
             .InventarioActualizado +=
             ActualizarInventario;
 
-
         conectado =
             true;
-
 
         if (
             inventoryService
@@ -153,55 +121,42 @@ public class FurnitureInventoryAutoUI :
         }
     }
 
-
     // =====================================================
-    // CREAR UI
+    // INTERFAZ
     // =====================================================
 
     private void CrearInterfaz()
     {
         CrearCanvas();
-
         CrearBotonMuebles();
-
         CrearPanel();
-
         ActualizarInventario();
     }
-
 
     private void CrearCanvas()
     {
         GameObject objetoCanvas =
             new GameObject(
-                "InventarioUI"
+                "InventarioUI",
+                typeof(RectTransform)
             );
 
-
         canvas =
-            objetoCanvas
-                .AddComponent<Canvas>();
-
+            objetoCanvas.AddComponent<Canvas>();
 
         canvas.renderMode =
             RenderMode.ScreenSpaceOverlay;
 
-
         canvas.sortingOrder =
             155;
 
-
         CanvasScaler scaler =
-            objetoCanvas
-                .AddComponent<
-                    CanvasScaler>();
-
+            objetoCanvas.AddComponent<
+                CanvasScaler>();
 
         scaler.uiScaleMode =
-            CanvasScaler
-                .ScaleMode
+            CanvasScaler.ScaleMode
                 .ScaleWithScreenSize;
-
 
         scaler.referenceResolution =
             new Vector2(
@@ -209,20 +164,12 @@ public class FurnitureInventoryAutoUI :
                 1080f
             );
 
-
         scaler.matchWidthOrHeight =
             0.5f;
 
-
-        objetoCanvas
-            .AddComponent<
-                GraphicRaycaster>();
+        objetoCanvas.AddComponent<
+            GraphicRaycaster>();
     }
-
-
-    // =====================================================
-    // BOTON MUEBLES
-    // =====================================================
 
     private void CrearBotonMuebles()
     {
@@ -232,39 +179,23 @@ public class FurnitureInventoryAutoUI :
                 canvas.transform
             );
 
-
         RectTransform rect =
-            objeto.GetComponent<
-                RectTransform>();
-
+            objeto.GetComponent<RectTransform>();
 
         rect.anchorMin =
-            new Vector2(
-                0f,
-                0f
-            );
-
+            new Vector2(0f, 0f);
 
         rect.anchorMax =
-            new Vector2(
-                0f,
-                0f
-            );
-
+            new Vector2(0f, 0f);
 
         rect.pivot =
-            new Vector2(
-                0f,
-                0f
-            );
-
+            new Vector2(0f, 0f);
 
         rect.anchoredPosition =
             new Vector2(
                 35f,
-                35f
+                30f
             );
-
 
         rect.sizeDelta =
             new Vector2(
@@ -272,113 +203,125 @@ public class FurnitureInventoryAutoUI :
                 58f
             );
 
-
         Image imagen =
             objeto.AddComponent<Image>();
 
+        imagen.sprite =
+            UIRoundedSpriteFactory.Obtener(
+                16f
+            );
+
+        imagen.type =
+            Image.Type.Sliced;
 
         imagen.color =
-            colorBoton;
-
+            new Color32(
+                10,
+                10,
+                10,
+                245
+            );
 
         Button boton =
             objeto.AddComponent<Button>();
 
+        boton.targetGraphic =
+            imagen;
 
         ConfigurarColoresBoton(
-            boton,
-            colorBoton
+            boton
         );
-
 
         boton.onClick.AddListener(
             AlternarInventario
         );
 
-
         TMP_Text texto =
             CrearTexto(
                 objeto.transform,
-                "Muebles",
-                21f,
+                "MUEBLES",
+                16f,
                 FontStyles.Bold,
                 TextAlignmentOptions.Center
             );
 
-
-        texto.raycastTarget =
-            false;
+        texto.color =
+            Color.white;
     }
-
-
-    // =====================================================
-    // PANEL
-    // =====================================================
 
     private void CrearPanel()
     {
         panel =
             CrearObjetoUI(
-                "PanelInventario",
+                "PanelInventarioModerno",
                 canvas.transform
             );
 
+        panelRect =
+            panel.GetComponent<RectTransform>();
 
-        RectTransform rect =
-            panel.GetComponent<
-                RectTransform>();
-
-
-        rect.anchorMin =
+        panelRect.anchorMin =
             new Vector2(
                 0.5f,
                 0f
             );
 
-
-        rect.anchorMax =
+        panelRect.anchorMax =
             new Vector2(
                 0.5f,
                 0f
             );
 
-
-        rect.pivot =
+        panelRect.pivot =
             new Vector2(
                 0.5f,
                 0f
             );
 
-
-        rect.anchoredPosition =
+        panelRect.anchoredPosition =
             new Vector2(
                 0f,
-                120f
+                108f
             );
 
-
-        rect.sizeDelta =
+        panelRect.sizeDelta =
             new Vector2(
-                820f,
-                330f
+                1240f,
+                525f
             );
-
 
         Image fondo =
             panel.AddComponent<Image>();
 
+        fondo.sprite =
+            UIRoundedSpriteFactory.Obtener(
+                GameUITheme.RadioPanel
+            );
+
+        fondo.type =
+            Image.Type.Sliced;
 
         fondo.color =
-            colorPanel;
+            GameUITheme.FondoPrincipal;
 
+        Outline borde =
+            panel.AddComponent<Outline>();
+
+        borde.effectColor =
+            GameUITheme.BordeSuave;
+
+        borde.effectDistance =
+            new Vector2(1f, -1f);
+
+        panelCanvasGroup =
+            panel.AddComponent<CanvasGroup>();
 
         CrearCabecera();
-
+        CrearBuscador();
+        CrearCategorias();
         CrearScroll();
-
-        CrearEstado();
+        CrearPie();
     }
-
 
     // =====================================================
     // CABECERA
@@ -390,187 +333,556 @@ public class FurnitureInventoryAutoUI :
             CrearTexto(
                 panel.transform,
                 "INVENTARIO",
-                26f,
+                30f,
                 FontStyles.Bold,
                 TextAlignmentOptions.Left
             );
 
+        titulo.color =
+            GameUITheme.TextoPrincipal;
 
-        RectTransform tituloRect =
+        RectTransform rTitulo =
             titulo.rectTransform;
 
+        rTitulo.anchorMin =
+            new Vector2(0f, 1f);
 
-        tituloRect.anchorMin =
+        rTitulo.anchorMax =
+            new Vector2(0f, 1f);
+
+        rTitulo.pivot =
+            new Vector2(0f, 1f);
+
+        rTitulo.anchoredPosition =
             new Vector2(
-                0f,
-                1f
+                30f,
+                -22f
             );
 
-
-        tituloRect.anchorMax =
+        rTitulo.sizeDelta =
             new Vector2(
-                1f,
-                1f
-            );
-
-
-        tituloRect.pivot =
-            new Vector2(
-                0f,
-                1f
-            );
-
-
-        tituloRect.anchoredPosition =
-            new Vector2(
-                25f,
-                -18f
-            );
-
-
-        tituloRect.sizeDelta =
-            new Vector2(
-                -100f,
+                380f,
                 40f
             );
-
 
         TMP_Text subtitulo =
             CrearTexto(
                 panel.transform,
-                "Tus muebles disponibles",
-                15f,
+                "Elige un mueble y colocalo en tu habitacion",
+                14f,
                 FontStyles.Normal,
                 TextAlignmentOptions.Left
             );
 
-
         subtitulo.color =
-            gris;
+            GameUITheme.TextoSecundario;
 
-
-        RectTransform subRect =
+        RectTransform rSub =
             subtitulo.rectTransform;
 
+        rSub.anchorMin =
+            new Vector2(0f, 1f);
 
-        subRect.anchorMin =
+        rSub.anchorMax =
+            new Vector2(0f, 1f);
+
+        rSub.pivot =
+            new Vector2(0f, 1f);
+
+        rSub.anchoredPosition =
             new Vector2(
-                0f,
-                1f
+                30f,
+                -62f
             );
 
-
-        subRect.anchorMax =
+        rSub.sizeDelta =
             new Vector2(
-                1f,
-                1f
+                520f,
+                26f
             );
-
-
-        subRect.pivot =
-            new Vector2(
-                0f,
-                1f
-            );
-
-
-        subRect.anchoredPosition =
-            new Vector2(
-                25f,
-                -55f
-            );
-
-
-        subRect.sizeDelta =
-            new Vector2(
-                -100f,
-                30f
-            );
-
 
         GameObject cerrar =
             CrearObjetoUI(
-                "Cerrar",
+                "CerrarInventario",
                 panel.transform
             );
 
+        RectTransform rCerrar =
+            cerrar.GetComponent<RectTransform>();
 
-        RectTransform cerrarRect =
-            cerrar.GetComponent<
-                RectTransform>();
+        rCerrar.anchorMin =
+            new Vector2(1f, 1f);
 
+        rCerrar.anchorMax =
+            new Vector2(1f, 1f);
 
-        cerrarRect.anchorMin =
+        rCerrar.pivot =
+            new Vector2(1f, 1f);
+
+        rCerrar.anchoredPosition =
             new Vector2(
-                1f,
-                1f
+                -24f,
+                -22f
             );
 
-
-        cerrarRect.anchorMax =
+        rCerrar.sizeDelta =
             new Vector2(
-                1f,
-                1f
+                44f,
+                44f
             );
 
-
-        cerrarRect.pivot =
-            new Vector2(
-                1f,
-                1f
-            );
-
-
-        cerrarRect.anchoredPosition =
-            new Vector2(
-                -18f,
-                -18f
-            );
-
-
-        cerrarRect.sizeDelta =
-            new Vector2(
-                45f,
-                45f
-            );
-
-
-        Image cerrarImagen =
+        Image bg =
             cerrar.AddComponent<Image>();
 
-
-        cerrarImagen.color =
-            new Color32(
-                55,
-                60,
-                72,
-                255
+        bg.sprite =
+            UIRoundedSpriteFactory.Obtener(
+                14f
             );
 
+        bg.type =
+            Image.Type.Sliced;
 
-        Button cerrarBoton =
+        bg.color =
+            new Color32(
+                255,
+                255,
+                255,
+                16
+            );
+
+        Button boton =
             cerrar.AddComponent<Button>();
 
+        boton.targetGraphic =
+            bg;
 
-        cerrarBoton.onClick.AddListener(
+        ConfigurarColoresBoton(
+            boton
+        );
+
+        boton.onClick.AddListener(
             CerrarInventario
         );
 
-
-        TMP_Text textoCerrar =
+        TMP_Text x =
             CrearTexto(
                 cerrar.transform,
-                "X",
-                20f,
+                "×",
+                26f,
+                FontStyles.Normal,
+                TextAlignmentOptions.Center
+            );
+
+        x.color =
+            GameUITheme.TextoPrincipal;
+    }
+
+    // =====================================================
+    // BUSCADOR
+    // =====================================================
+
+    private void CrearBuscador()
+    {
+        GameObject caja =
+            CrearObjetoUI(
+                "Buscador",
+                panel.transform
+            );
+
+        RectTransform r =
+            caja.GetComponent<RectTransform>();
+
+        r.anchorMin =
+            new Vector2(1f, 1f);
+
+        r.anchorMax =
+            new Vector2(1f, 1f);
+
+        r.pivot =
+            new Vector2(1f, 1f);
+
+        r.anchoredPosition =
+            new Vector2(
+                -86f,
+                -24f
+            );
+
+        r.sizeDelta =
+            new Vector2(
+                330f,
+                46f
+            );
+
+        Image bg =
+            caja.AddComponent<Image>();
+
+        bg.sprite =
+            UIRoundedSpriteFactory.Obtener(
+                15f
+            );
+
+        bg.type =
+            Image.Type.Sliced;
+
+        bg.color =
+            GameUITheme.FondoElevado;
+
+        Outline borde =
+            caja.AddComponent<Outline>();
+
+        borde.effectColor =
+            GameUITheme.BordeSuave;
+
+        borde.effectDistance =
+            new Vector2(1f, -1f);
+
+        buscador =
+            caja.AddComponent<TMP_InputField>();
+
+        buscador.targetGraphic =
+            bg;
+
+        GameObject placeholderObjeto =
+            CrearObjetoUI(
+                "Placeholder",
+                caja.transform
+            );
+
+        TextMeshProUGUI placeholder =
+            placeholderObjeto
+                .AddComponent<TextMeshProUGUI>();
+
+        placeholder.text =
+            "Buscar mueble...";
+
+        placeholder.fontSize =
+            15f;
+
+        placeholder.color =
+            GameUITheme.TextoSecundario;
+
+        placeholder.alignment =
+            TextAlignmentOptions.Left;
+
+        placeholder.raycastTarget =
+            false;
+
+        RectTransform rPlaceholder =
+            placeholder.rectTransform;
+
+        rPlaceholder.anchorMin =
+            Vector2.zero;
+
+        rPlaceholder.anchorMax =
+            Vector2.one;
+
+        rPlaceholder.offsetMin =
+            new Vector2(18f, 4f);
+
+        rPlaceholder.offsetMax =
+            new Vector2(-18f, -4f);
+
+        GameObject textoObjeto =
+            CrearObjetoUI(
+                "TextoEntrada",
+                caja.transform
+            );
+
+        TextMeshProUGUI texto =
+            textoObjeto
+                .AddComponent<TextMeshProUGUI>();
+
+        texto.fontSize =
+            15f;
+
+        texto.color =
+            GameUITheme.TextoPrincipal;
+
+        texto.alignment =
+            TextAlignmentOptions.Left;
+
+        texto.raycastTarget =
+            false;
+
+        RectTransform rTexto =
+            texto.rectTransform;
+
+        rTexto.anchorMin =
+            Vector2.zero;
+
+        rTexto.anchorMax =
+            Vector2.one;
+
+        rTexto.offsetMin =
+            new Vector2(18f, 4f);
+
+        rTexto.offsetMax =
+            new Vector2(-18f, -4f);
+
+        buscador.textViewport =
+            rTexto;
+
+        buscador.textComponent =
+            texto;
+
+        buscador.placeholder =
+            placeholder;
+
+        buscador.lineType =
+            TMP_InputField.LineType.SingleLine;
+
+        buscador.onValueChanged.AddListener(
+            AlCambiarBusqueda
+        );
+    }
+
+    // =====================================================
+    // CATEGORIAS
+    // =====================================================
+
+    private void CrearCategorias()
+    {
+        GameObject objeto =
+            CrearObjetoUI(
+                "Categorias",
+                panel.transform
+            );
+
+        RectTransform r =
+            objeto.GetComponent<RectTransform>();
+
+        r.anchorMin =
+            new Vector2(0f, 1f);
+
+        r.anchorMax =
+            new Vector2(1f, 1f);
+
+        r.pivot =
+            new Vector2(0.5f, 1f);
+
+        r.anchoredPosition =
+            new Vector2(
+                0f,
+                -102f
+            );
+
+        r.sizeDelta =
+            new Vector2(
+                -60f,
+                42f
+            );
+
+        contenedorCategorias =
+            objeto.transform;
+
+        HorizontalLayoutGroup layout =
+            objeto.AddComponent<
+                HorizontalLayoutGroup>();
+
+        layout.spacing =
+            10f;
+
+        layout.childAlignment =
+            TextAnchor.MiddleLeft;
+
+        layout.childControlWidth =
+            false;
+
+        layout.childControlHeight =
+            false;
+
+        layout.childForceExpandWidth =
+            false;
+
+        layout.childForceExpandHeight =
+            false;
+    }
+
+    private void ReconstruirCategorias()
+    {
+        if (contenedorCategorias == null)
+            return;
+
+        for (
+            int i =
+                contenedorCategorias.childCount - 1;
+            i >= 0;
+            i--
+        )
+        {
+            Destroy(
+                contenedorCategorias
+                    .GetChild(i)
+                    .gameObject
+            );
+        }
+
+        botonesCategorias.Clear();
+
+        HashSet<string> categorias =
+            new HashSet<string>(
+                StringComparer.OrdinalIgnoreCase
+            );
+
+        categorias.Add("Todos");
+
+        foreach (
+            GrupoInventario grupo
+            in gruposActuales
+        )
+        {
+            if (
+                !string.IsNullOrWhiteSpace(
+                    grupo.Categoria
+                )
+            )
+            {
+                categorias.Add(
+                    FormatearCategoria(
+                        grupo.Categoria
+                    )
+                );
+            }
+        }
+
+        foreach (string categoria in categorias)
+        {
+            CrearBotonCategoria(
+                categoria
+            );
+        }
+
+        ActualizarEstiloCategorias();
+    }
+
+    private void CrearBotonCategoria(
+        string categoria)
+    {
+        GameObject objeto =
+            CrearObjetoUI(
+                "Categoria_" + categoria,
+                contenedorCategorias
+            );
+
+        RectTransform r =
+            objeto.GetComponent<RectTransform>();
+
+        float ancho =
+            Mathf.Clamp(
+                72f +
+                categoria.Length * 6f,
+                92f,
+                160f
+            );
+
+        r.sizeDelta =
+            new Vector2(
+                ancho,
+                36f
+            );
+
+        Image bg =
+            objeto.AddComponent<Image>();
+
+        bg.sprite =
+            UIRoundedSpriteFactory.Obtener(
+                14f
+            );
+
+        bg.type =
+            Image.Type.Sliced;
+
+        Button boton =
+            objeto.AddComponent<Button>();
+
+        boton.targetGraphic =
+            bg;
+
+        LayoutElement layout =
+            objeto.AddComponent<LayoutElement>();
+
+        layout.preferredWidth =
+            ancho;
+
+        layout.preferredHeight =
+            36f;
+
+        string categoriaGuardada =
+            categoria;
+
+        boton.onClick.AddListener(
+            () =>
+            {
+                categoriaActual =
+                    categoriaGuardada;
+
+                ActualizarEstiloCategorias();
+                RenderizarTarjetas();
+            }
+        );
+
+        TMP_Text texto =
+            CrearTexto(
+                objeto.transform,
+                categoria,
+                13f,
                 FontStyles.Bold,
                 TextAlignmentOptions.Center
             );
 
-
-        textoCerrar.raycastTarget =
-            false;
+        botonesCategorias[
+            categoria
+        ] = boton;
     }
 
+    private void ActualizarEstiloCategorias()
+    {
+        foreach (
+            KeyValuePair<string, Button>
+            par
+            in botonesCategorias
+        )
+        {
+            Image bg =
+                par.Value.targetGraphic
+                    as Image;
+
+            if (bg == null)
+                continue;
+
+            bool activo =
+                string.Equals(
+                    par.Key,
+                    categoriaActual,
+                    StringComparison
+                        .OrdinalIgnoreCase
+                );
+
+            bg.color =
+                activo
+                    ? GameUITheme.Esmeralda
+                    : new Color32(
+                        255,
+                        255,
+                        255,
+                        14
+                    );
+
+            TMP_Text texto =
+                par.Value
+                    .GetComponentInChildren<
+                        TMP_Text>();
+
+            if (texto != null)
+            {
+                texto.color =
+                    activo
+                        ? Color.white
+                        : GameUITheme
+                            .TextoSecundario;
+            }
+        }
+    }
 
     // =====================================================
     // SCROLL
@@ -578,77 +890,84 @@ public class FurnitureInventoryAutoUI :
 
     private void CrearScroll()
     {
-        GameObject scroll =
+        GameObject scrollObjeto =
             CrearObjetoUI(
-                "Scroll",
+                "ScrollInventario",
                 panel.transform
             );
 
+        RectTransform rScroll =
+            scrollObjeto
+                .GetComponent<RectTransform>();
 
-        RectTransform scrollRectTransform =
-            scroll.GetComponent<
-                RectTransform>();
+        rScroll.anchorMin =
+            new Vector2(0f, 0f);
 
+        rScroll.anchorMax =
+            new Vector2(1f, 1f);
 
-        scrollRectTransform.anchorMin =
+        rScroll.offsetMin =
             new Vector2(
-                0f,
-                0f
+                28f,
+                50f
             );
 
-
-        scrollRectTransform.anchorMax =
+        rScroll.offsetMax =
             new Vector2(
-                1f,
-                1f
+                -28f,
+                -156f
             );
 
-
-        scrollRectTransform.offsetMin =
-            new Vector2(
-                20f,
-                45f
-            );
-
-
-        scrollRectTransform.offsetMax =
-            new Vector2(
-                -20f,
-                -95f
-            );
-
+        ScrollRect scroll =
+            scrollObjeto.AddComponent<
+                ScrollRect>();
 
         GameObject viewport =
             CrearObjetoUI(
                 "Viewport",
-                scroll.transform
+                scrollObjeto.transform
             );
 
+        RectTransform rViewport =
+            viewport
+                .GetComponent<RectTransform>();
 
-        RectTransform viewportRect =
-            viewport.GetComponent<
-                RectTransform>();
-
-
-        viewportRect.anchorMin =
+        rViewport.anchorMin =
             Vector2.zero;
 
-
-        viewportRect.anchorMax =
+        rViewport.anchorMax =
             Vector2.one;
 
-
-        viewportRect.offsetMin =
+        rViewport.offsetMin =
             Vector2.zero;
 
-
-        viewportRect.offsetMax =
+        rViewport.offsetMax =
             Vector2.zero;
 
+        Image viewportImagen =
+            viewport.AddComponent<Image>();
 
-        viewport.AddComponent<
-            RectMask2D>();
+        viewportImagen.sprite =
+            UIRoundedSpriteFactory.Obtener(
+                18f
+            );
 
+        viewportImagen.type =
+            Image.Type.Sliced;
+
+        viewportImagen.color =
+            new Color32(
+                255,
+                255,
+                255,
+                1
+            );
+
+        Mask mask =
+            viewport.AddComponent<Mask>();
+
+        mask.showMaskGraphic =
+            false;
 
         GameObject contenidoObjeto =
             CrearObjetoUI(
@@ -656,264 +975,234 @@ public class FurnitureInventoryAutoUI :
                 viewport.transform
             );
 
-
         contenido =
             contenidoObjeto.transform;
 
-
-        RectTransform contenidoRect =
+        RectTransform rContenido =
             contenidoObjeto
-                .GetComponent<
-                    RectTransform>();
+                .GetComponent<RectTransform>();
 
-
-        contenidoRect.anchorMin =
+        rContenido.anchorMin =
             new Vector2(
                 0f,
                 1f
             );
 
-
-        contenidoRect.anchorMax =
+        rContenido.anchorMax =
             new Vector2(
                 1f,
                 1f
             );
 
-
-        contenidoRect.pivot =
+        rContenido.pivot =
             new Vector2(
                 0.5f,
                 1f
             );
 
-
-        contenidoRect.anchoredPosition =
+        rContenido.anchoredPosition =
             Vector2.zero;
 
-
-        contenidoRect.sizeDelta =
-            new Vector2(
-                0f,
-                120f
-            );
-
+        rContenido.sizeDelta =
+            Vector2.zero;
 
         GridLayoutGroup grid =
-            contenidoObjeto
-                .AddComponent<
-                    GridLayoutGroup>();
-
+            contenidoObjeto.AddComponent<
+                GridLayoutGroup>();
 
         grid.cellSize =
             new Vector2(
-                180f,
-                150f
+                220f,
+                238f
             );
-
 
         grid.spacing =
             new Vector2(
-                12f,
-                12f
+                16f,
+                16f
             );
-
 
         grid.padding =
             new RectOffset(
-                5,
-                5,
-                5,
-                5
+                4,
+                4,
+                4,
+                4
             );
 
-
         grid.constraint =
-            GridLayoutGroup
-                .Constraint
+            GridLayoutGroup.Constraint
                 .FixedColumnCount;
 
-
         grid.constraintCount =
-            4;
-
+            5;
 
         ContentSizeFitter fitter =
-            contenidoObjeto
-                .AddComponent<
-                    ContentSizeFitter>();
-
+            contenidoObjeto.AddComponent<
+                ContentSizeFitter>();
 
         fitter.verticalFit =
-            ContentSizeFitter
-                .FitMode
+            ContentSizeFitter.FitMode
                 .PreferredSize;
 
+        scroll.viewport =
+            rViewport;
 
-        ScrollRect scrollRect =
-            scroll.AddComponent<
-                ScrollRect>();
+        scroll.content =
+            rContenido;
 
-
-        scrollRect.viewport =
-            viewportRect;
-
-
-        scrollRect.content =
-            contenidoRect;
-
-
-        scrollRect.horizontal =
+        scroll.horizontal =
             false;
 
-
-        scrollRect.vertical =
+        scroll.vertical =
             true;
 
-
-        scrollRect.movementType =
-            ScrollRect
-                .MovementType
+        scroll.movementType =
+            ScrollRect.MovementType
                 .Clamped;
 
-
-        scrollRect.scrollSensitivity =
-            25f;
+        scroll.scrollSensitivity =
+            28f;
     }
 
-
     // =====================================================
-    // ESTADO
+    // PIE
     // =====================================================
 
-    private void CrearEstado()
+    private void CrearPie()
     {
+        textoContador =
+            CrearTexto(
+                panel.transform,
+                "0 muebles",
+                13f,
+                FontStyles.Bold,
+                TextAlignmentOptions.Left
+            );
+
+        textoContador.color =
+            GameUITheme.TextoSecundario;
+
+        RectTransform rContador =
+            textoContador.rectTransform;
+
+        rContador.anchorMin =
+            new Vector2(0f, 0f);
+
+        rContador.anchorMax =
+            new Vector2(0f, 0f);
+
+        rContador.pivot =
+            new Vector2(0f, 0f);
+
+        rContador.anchoredPosition =
+            new Vector2(
+                30f,
+                16f
+            );
+
+        rContador.sizeDelta =
+            new Vector2(
+                250f,
+                24f
+            );
+
         textoEstado =
             CrearTexto(
                 panel.transform,
                 "",
-                14f,
+                13f,
                 FontStyles.Normal,
-                TextAlignmentOptions.Center
+                TextAlignmentOptions.Right
             );
-
 
         textoEstado.color =
-            gris;
+            GameUITheme.TextoSecundario;
 
-
-        RectTransform rect =
+        RectTransform rEstado =
             textoEstado.rectTransform;
 
+        rEstado.anchorMin =
+            new Vector2(1f, 0f);
 
-        rect.anchorMin =
+        rEstado.anchorMax =
+            new Vector2(1f, 0f);
+
+        rEstado.pivot =
+            new Vector2(1f, 0f);
+
+        rEstado.anchoredPosition =
             new Vector2(
-                0f,
-                0f
+                -30f,
+                16f
             );
 
-
-        rect.anchorMax =
+        rEstado.sizeDelta =
             new Vector2(
-                1f,
-                0f
-            );
-
-
-        rect.pivot =
-            new Vector2(
-                0.5f,
-                0f
-            );
-
-
-        rect.anchoredPosition =
-            new Vector2(
-                0f,
-                12f
-            );
-
-
-        rect.sizeDelta =
-            new Vector2(
-                -40f,
-                30f
+                420f,
+                24f
             );
     }
-
-
-    private void MostrarEstado(
-        string mensaje)
-    {
-        if (textoEstado == null)
-            return;
-
-
-        textoEstado.text =
-            mensaje;
-    }
-
 
     // =====================================================
-    // ACTUALIZAR INVENTARIO
+    // INVENTARIO
     // =====================================================
 
     private void ActualizarInventario()
     {
-        LimpiarTarjetas();
+        gruposActuales.Clear();
 
-
-        if (
-            inventoryService == null
-        )
+        if (inventoryService == null)
         {
+            LimpiarTarjetas();
             MostrarEstado(
                 "Cargando inventario..."
             );
-
+            ActualizarContador(0);
             return;
         }
-
 
         if (
             !inventoryService
                 .InventarioCargado
         )
         {
+            LimpiarTarjetas();
             MostrarEstado(
                 "Cargando inventario..."
             );
-
+            ActualizarContador(0);
             return;
         }
-
 
         FurnitureInventoryItemData[]
             items =
                 inventoryService.Items;
-
 
         if (
             items == null ||
             items.Length == 0
         )
         {
+            LimpiarTarjetas();
             MostrarEstado(
                 "Tu inventario esta vacio."
             );
-
+            ActualizarContador(0);
+            ReconstruirCategorias();
             return;
         }
 
-
         Dictionary<
             string,
-            List<FurnitureInventoryItemData>>
-            grupos =
+            GrupoInventario>
+            mapa =
                 new Dictionary<
                     string,
-                    List<FurnitureInventoryItemData>>();
+                    GrupoInventario>();
 
+        int totalDisponible =
+            0;
 
         foreach (
             FurnitureInventoryItemData item
@@ -923,10 +1212,8 @@ public class FurnitureInventoryAutoUI :
             if (item == null)
                 continue;
 
-
             if (item.placed)
                 continue;
-
 
             if (
                 ExisteEnEscena(
@@ -936,7 +1223,6 @@ public class FurnitureInventoryAutoUI :
             {
                 continue;
             }
-
 
             if (
                 string.IsNullOrWhiteSpace(
@@ -947,112 +1233,63 @@ public class FurnitureInventoryAutoUI :
                 continue;
             }
 
+            totalDisponible++;
 
             if (
-                !grupos.ContainsKey(
-                    item.product_id
+                !mapa.TryGetValue(
+                    item.product_id,
+                    out GrupoInventario grupo
                 )
             )
             {
-                grupos[
+                grupo =
+                    CrearGrupo(item);
+
+                mapa[
                     item.product_id
-                ] =
-                    new List<
-                        FurnitureInventoryItemData>();
+                ] = grupo;
+
+                gruposActuales.Add(
+                    grupo
+                );
             }
 
-
-            grupos[
-                item.product_id
-            ].Add(
+            grupo.Items.Add(
                 item
             );
         }
 
+        ReconstruirCategorias();
+        RenderizarTarjetas();
+        ActualizarContador(
+            totalDisponible
+        );
 
-        if (grupos.Count == 0)
+        if (totalDisponible == 0)
         {
             MostrarEstado(
                 "No tienes muebles disponibles."
             );
-
-            return;
         }
-
-
-        int totalDisponible =
-            0;
-
-
-        foreach (
-            KeyValuePair<
-                string,
-                List<
-                    FurnitureInventoryItemData>>
-                grupo
-            in grupos
-        )
+        else
         {
-            if (
-                grupo.Value == null ||
-                grupo.Value.Count == 0
-            )
-            {
-                continue;
-            }
-
-
-            totalDisponible +=
-                grupo.Value.Count;
-
-
-            CrearTarjeta(
-                grupo.Key,
-                grupo.Value
+            MostrarEstado(
+                "Listo para decorar"
             );
         }
-
-
-        MostrarEstado(
-            totalDisponible +
-            " mueble(s) disponible(s)"
-        );
     }
 
-
-    // =====================================================
-    // TARJETA
-    // =====================================================
-
-    private void CrearTarjeta(
-        string productId,
-        List<FurnitureInventoryItemData>
-            items)
+    private GrupoInventario CrearGrupo(
+        FurnitureInventoryItemData item)
     {
-        if (
-            items == null ||
-            items.Count == 0
-        )
-        {
-            return;
-        }
-
-
         GameObject prefab =
             FurniturePrefabResolver
                 .ObtenerPrefab(
-                    productId
+                    item.product_id
                 );
 
-
-        FurnitureInventoryItemData
-            ejemplo =
-                items[0];
-
-
         string nombre =
-            ejemplo.name;
-
+            item.name;
 
         if (
             string.IsNullOrWhiteSpace(
@@ -1060,283 +1297,196 @@ public class FurnitureInventoryAutoUI :
             )
         )
         {
-            if (prefab != null)
-            {
-                nombre =
-                    prefab.name;
-            }
-            else
-            {
-                nombre =
-                    productId;
-            }
+            nombre =
+                prefab != null
+                    ? prefab.name
+                    : item.product_id;
         }
-
-
-        GameObject tarjeta =
-            CrearObjetoUI(
-                "Mueble_" +
-                productId,
-                contenido
-            );
-
-
-        Image fondo =
-            tarjeta.AddComponent<Image>();
-
-
-        fondo.color =
-            colorTarjeta;
-
-
-        FurnitureData datos =
-            null;
-
-
-        if (prefab != null)
-        {
-            datos =
-                prefab.GetComponent<
-                    FurnitureData>();
-        }
-
 
         string tamano =
             "";
 
-
-        if (datos != null)
+        if (prefab != null)
         {
-            tamano =
-                datos.ancho +
-                " × " +
-                datos.largo;
+            FurnitureData datos =
+                prefab.GetComponent<
+                    FurnitureData>();
+
+            if (datos != null)
+            {
+                tamano =
+                    datos.ancho +
+                    " × " +
+                    datos.largo;
+            }
         }
 
+        return new GrupoInventario
+        {
+            ProductId =
+                item.product_id,
 
-        TMP_Text nombreTexto =
-            CrearTexto(
-                tarjeta.transform,
+            Nombre =
                 nombre,
-                18f,
-                FontStyles.Bold,
-                TextAlignmentOptions.Center
-            );
 
+            Categoria =
+                FormatearCategoria(
+                    item.category
+                ),
 
-        RectTransform nombreRect =
-            nombreTexto.rectTransform;
-
-
-        nombreRect.anchorMin =
-            new Vector2(
-                0f,
-                1f
-            );
-
-
-        nombreRect.anchorMax =
-            new Vector2(
-                1f,
-                1f
-            );
-
-
-        nombreRect.pivot =
-            new Vector2(
-                0.5f,
-                1f
-            );
-
-
-        nombreRect.anchoredPosition =
-            new Vector2(
-                0f,
-                -12f
-            );
-
-
-        nombreRect.sizeDelta =
-            new Vector2(
-                -10f,
-                32f
-            );
-
-
-        TMP_Text infoTexto =
-            CrearTexto(
-                tarjeta.transform,
-                (
-                    string.IsNullOrWhiteSpace(
-                        tamano
-                    )
-                        ?
-                        ""
-                        :
-                        tamano + "\n"
-                )
-                +
-                "Disponibles: x" +
-                items.Count,
-                14f,
-                FontStyles.Normal,
-                TextAlignmentOptions.Center
-            );
-
-
-        infoTexto.color =
-            gris;
-
-
-        RectTransform infoRect =
-            infoTexto.rectTransform;
-
-
-        infoRect.anchorMin =
-            new Vector2(
-                0f,
-                0.5f
-            );
-
-
-        infoRect.anchorMax =
-            new Vector2(
-                1f,
-                0.5f
-            );
-
-
-        infoRect.pivot =
-            new Vector2(
-                0.5f,
-                0.5f
-            );
-
-
-        infoRect.anchoredPosition =
-            new Vector2(
-                0f,
-                5f
-            );
-
-
-        infoRect.sizeDelta =
-            new Vector2(
-                -10f,
-                50f
-            );
-
-
-        GameObject botonObjeto =
-            CrearObjetoUI(
-                "BotonColocar",
-                tarjeta.transform
-            );
-
-
-        RectTransform botonRect =
-            botonObjeto.GetComponent<
-                RectTransform>();
-
-
-        botonRect.anchorMin =
-            new Vector2(
-                0f,
-                0f
-            );
-
-
-        botonRect.anchorMax =
-            new Vector2(
-                1f,
-                0f
-            );
-
-
-        botonRect.pivot =
-            new Vector2(
-                0.5f,
-                0f
-            );
-
-
-        botonRect.anchoredPosition =
-            new Vector2(
-                0f,
-                10f
-            );
-
-
-        botonRect.sizeDelta =
-            new Vector2(
-                -20f,
-                38f
-            );
-
-
-        Image botonImagen =
-            botonObjeto
-                .AddComponent<Image>();
-
-
-        botonImagen.color =
-            verde;
-
-
-        Button boton =
-            botonObjeto
-                .AddComponent<Button>();
-
-
-        boton.targetGraphic =
-            botonImagen;
-
-
-        string idGuardado =
-            productId;
-
-
-        boton.onClick.AddListener(
-            () =>
-            {
-                SeleccionarProducto(
-                    idGuardado
-                );
-            }
-        );
-
-
-        TMP_Text textoBoton =
-            CrearTexto(
-                botonObjeto.transform,
-                "COLOCAR",
-                14f,
-                FontStyles.Bold,
-                TextAlignmentOptions.Center
-            );
-
-
-        textoBoton.raycastTarget =
-            false;
+            Tamano =
+                tamano
+        };
     }
 
+    private void RenderizarTarjetas()
+    {
+        LimpiarTarjetas();
+
+        if (contenido == null)
+            return;
+
+        int visibles =
+            0;
+
+        foreach (
+            GrupoInventario grupo
+            in gruposActuales
+        )
+        {
+            if (!PasaFiltros(grupo))
+                continue;
+
+            visibles++;
+
+            GameObject tarjeta =
+                CrearObjetoUI(
+                    "Mueble_" +
+                    grupo.ProductId,
+                    contenido
+                );
+
+            FurnitureInventoryCardUI
+                tarjetaUI =
+                    tarjeta.AddComponent<
+                        FurnitureInventoryCardUI>();
+
+            string productIdGuardado =
+                grupo.ProductId;
+
+            tarjetaUI.Construir(
+                grupo.Nombre,
+                grupo.Categoria,
+                grupo.Tamano,
+                grupo.Items.Count,
+                () =>
+                {
+                    SeleccionarProducto(
+                        productIdGuardado
+                    );
+                }
+            );
+        }
+
+        if (
+            gruposActuales.Count > 0 &&
+            visibles == 0
+        )
+        {
+            MostrarEstado(
+                "No encontramos muebles con ese filtro."
+            );
+        }
+        else if (visibles > 0)
+        {
+            MostrarEstado(
+                visibles +
+                (
+                    visibles == 1
+                        ? " tipo visible"
+                        : " tipos visibles"
+                )
+            );
+        }
+    }
+
+    private bool PasaFiltros(
+        GrupoInventario grupo)
+    {
+        if (grupo == null)
+            return false;
+
+        if (
+            !string.Equals(
+                categoriaActual,
+                "Todos",
+                StringComparison.OrdinalIgnoreCase
+            )
+            &&
+            !string.Equals(
+                grupo.Categoria,
+                categoriaActual,
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+        {
+            return false;
+        }
+
+        if (
+            string.IsNullOrWhiteSpace(
+                busquedaActual
+            )
+        )
+        {
+            return true;
+        }
+
+        string buscar =
+            busquedaActual
+                .Trim()
+                .ToLowerInvariant();
+
+        string nombre =
+            (grupo.Nombre ?? "")
+                .ToLowerInvariant();
+
+        string categoria =
+            (grupo.Categoria ?? "")
+                .ToLowerInvariant();
+
+        string producto =
+            (grupo.ProductId ?? "")
+                .ToLowerInvariant();
+
+        return
+            nombre.Contains(buscar) ||
+            categoria.Contains(buscar) ||
+            producto.Contains(buscar);
+    }
+
+    private void AlCambiarBusqueda(
+        string valor)
+    {
+        busquedaActual =
+            valor ?? "";
+
+        RenderizarTarjetas();
+    }
 
     // =====================================================
-    // SACAR MUEBLE
+    // COLOCAR MUEBLE
     // =====================================================
 
     private void SeleccionarProducto(
         string productId)
     {
-        if (
-            inventorySpawner == null
-        )
+        if (inventorySpawner == null)
         {
             inventorySpawner =
-                Object.FindAnyObjectByType<
+                UnityEngine.Object.FindAnyObjectByType<
                     FurnitureInventorySpawner>();
         }
-
 
         if (inventorySpawner == null)
         {
@@ -1344,13 +1494,8 @@ public class FurnitureInventoryAutoUI :
                 "No se encontro el sistema de colocacion."
             );
 
-            Debug.LogError(
-                "FurnitureInventorySpawner no esta en la escena."
-            );
-
             return;
         }
-
 
         if (
             inventoryService == null ||
@@ -1360,7 +1505,6 @@ public class FurnitureInventoryAutoUI :
             return;
         }
 
-
         foreach (
             FurnitureInventoryItemData item
             in inventoryService.Items
@@ -1368,7 +1512,6 @@ public class FurnitureInventoryAutoUI :
         {
             if (item == null)
                 continue;
-
 
             if (
                 item.product_id !=
@@ -1378,10 +1521,8 @@ public class FurnitureInventoryAutoUI :
                 continue;
             }
 
-
             if (item.placed)
                 continue;
-
 
             if (
                 ExisteEnEscena(
@@ -1392,43 +1533,194 @@ public class FurnitureInventoryAutoUI :
                 continue;
             }
 
-
             bool creado =
                 inventorySpawner
                     .CrearDesdeInventario(
                         item
                     );
 
-
             if (!creado)
                 continue;
 
-
-            Debug.Log(
-                "INVENTARIO UI -> preparando item " +
-                item.item_id
-            );
-
-
             ActualizarInventario();
-
             CerrarInventario();
 
             return;
         }
 
-
         MostrarEstado(
             "No quedan unidades disponibles."
         );
 
-
         ActualizarInventario();
     }
 
+    // =====================================================
+    // ABRIR / CERRAR
+    // =====================================================
+
+    public void AlternarInventario()
+    {
+        if (panel == null)
+            return;
+
+        if (panel.activeSelf)
+        {
+            CerrarInventario();
+        }
+        else
+        {
+            AbrirInventario();
+        }
+    }
+
+    private void AbrirInventario()
+    {
+        if (panel == null)
+            return;
+
+        ActualizarInventario();
+
+        panel.SetActive(true);
+
+        if (animacionPanel != null)
+            StopCoroutine(animacionPanel);
+
+        animacionPanel =
+            StartCoroutine(
+                AnimarPanel(
+                    true
+                )
+            );
+    }
+
+    public void CerrarInventario()
+    {
+        if (
+            panel == null ||
+            !panel.activeSelf
+        )
+        {
+            return;
+        }
+
+        if (animacionPanel != null)
+            StopCoroutine(animacionPanel);
+
+        animacionPanel =
+            StartCoroutine(
+                AnimarPanel(
+                    false
+                )
+            );
+    }
+
+    private void CerrarInventarioInmediato()
+    {
+        if (panel == null)
+            return;
+
+        panel.SetActive(false);
+    }
+
+    private IEnumerator AnimarPanel(
+        bool abrir)
+    {
+        float duracion =
+            0.18f;
+
+        float tiempo =
+            0f;
+
+        Vector2 posicionAbierta =
+            new Vector2(
+                0f,
+                108f
+            );
+
+        Vector2 posicionCerrada =
+            new Vector2(
+                0f,
+                -470f
+            );
+
+        Vector2 desde =
+            abrir
+                ? posicionCerrada
+                : panelRect
+                    .anchoredPosition;
+
+        Vector2 hasta =
+            abrir
+                ? posicionAbierta
+                : posicionCerrada;
+
+        float alphaDesde =
+            abrir
+                ? 0f
+                : panelCanvasGroup.alpha;
+
+        float alphaHasta =
+            abrir
+                ? 1f
+                : 0f;
+
+        panelRect.anchoredPosition =
+            desde;
+
+        panelCanvasGroup.alpha =
+            alphaDesde;
+
+        while (tiempo < duracion)
+        {
+            tiempo +=
+                Time.unscaledDeltaTime;
+
+            float t =
+                Mathf.Clamp01(
+                    tiempo /
+                    duracion
+                );
+
+            float suave =
+                1f -
+                Mathf.Pow(
+                    1f - t,
+                    3f
+                );
+
+            panelRect.anchoredPosition =
+                Vector2.Lerp(
+                    desde,
+                    hasta,
+                    suave
+                );
+
+            panelCanvasGroup.alpha =
+                Mathf.Lerp(
+                    alphaDesde,
+                    alphaHasta,
+                    suave
+                );
+
+            yield return null;
+        }
+
+        panelRect.anchoredPosition =
+            hasta;
+
+        panelCanvasGroup.alpha =
+            alphaHasta;
+
+        if (!abrir)
+            panel.SetActive(false);
+
+        animacionPanel =
+            null;
+    }
 
     // =====================================================
-    // COMPROBAR ITEMS YA EN LA HABITACION
+    // UTILIDADES
     // =====================================================
 
     private bool ExisteEnEscena(
@@ -1443,14 +1735,12 @@ public class FurnitureInventoryAutoUI :
             return false;
         }
 
-
         FurnitureInventoryInstance[]
             instancias =
-                Object.FindObjectsByType<
+                UnityEngine.Object.FindObjectsByType<
                     FurnitureInventoryInstance>(
                     FindObjectsSortMode.None
                 );
-
 
         foreach (
             FurnitureInventoryInstance
@@ -1468,57 +1758,13 @@ public class FurnitureInventoryAutoUI :
             }
         }
 
-
         return false;
     }
-
-
-    // =====================================================
-    // ABRIR / CERRAR
-    // =====================================================
-
-    public void AlternarInventario()
-    {
-        if (panel == null)
-            return;
-
-
-        bool abrir =
-            !panel.activeSelf;
-
-
-        panel.SetActive(
-            abrir
-        );
-
-
-        if (abrir)
-        {
-            ActualizarInventario();
-        }
-    }
-
-
-    public void CerrarInventario()
-    {
-        if (panel != null)
-        {
-            panel.SetActive(
-                false
-            );
-        }
-    }
-
-
-    // =====================================================
-    // LIMPIEZA TARJETAS
-    // =====================================================
 
     private void LimpiarTarjetas()
     {
         if (contenido == null)
             return;
-
 
         for (
             int i =
@@ -1535,10 +1781,51 @@ public class FurnitureInventoryAutoUI :
         }
     }
 
+    private void ActualizarContador(
+        int total)
+    {
+        if (textoContador == null)
+            return;
 
-    // =====================================================
-    // UTILIDADES UI
-    // =====================================================
+        textoContador.text =
+            total +
+            (
+                total == 1
+                    ? " mueble disponible"
+                    : " muebles disponibles"
+            );
+    }
+
+    private void MostrarEstado(
+        string mensaje)
+    {
+        if (textoEstado == null)
+            return;
+
+        textoEstado.text =
+            mensaje;
+    }
+
+    private string FormatearCategoria(
+        string categoria)
+    {
+        if (string.IsNullOrWhiteSpace(categoria))
+            return "Otros";
+
+        string limpia =
+            categoria.Trim();
+
+        if (limpia.Length == 1)
+            return limpia.ToUpperInvariant();
+
+        return
+            char.ToUpperInvariant(
+                limpia[0]
+            )
+            +
+            limpia.Substring(1)
+                .ToLowerInvariant();
+    }
 
     private GameObject CrearObjetoUI(
         string nombre,
@@ -1550,16 +1837,13 @@ public class FurnitureInventoryAutoUI :
                 typeof(RectTransform)
             );
 
-
         objeto.transform.SetParent(
             padre,
             false
         );
 
-
         return objeto;
     }
-
 
     private TMP_Text CrearTexto(
         Transform padre,
@@ -1574,104 +1858,114 @@ public class FurnitureInventoryAutoUI :
                 padre
             );
 
-
         TextMeshProUGUI texto =
             objetoTexto
                 .AddComponent<
                     TextMeshProUGUI>();
 
-
         texto.text =
             contenidoTexto;
-
 
         texto.fontSize =
             tamano;
 
-
         texto.fontStyle =
             estilo;
-
 
         texto.alignment =
             alineacion;
 
-
         texto.color =
-            Color.white;
-
+            GameUITheme.TextoPrincipal;
 
         texto.raycastTarget =
             false;
 
-
         RectTransform rect =
             texto.rectTransform;
-
 
         rect.anchorMin =
             Vector2.zero;
 
-
         rect.anchorMax =
             Vector2.one;
 
-
         rect.offsetMin =
             new Vector2(
-                8f,
-                5f
+                6f,
+                3f
             );
-
 
         rect.offsetMax =
             new Vector2(
-                -8f,
-                -5f
+                -6f,
+                -3f
             );
-
 
         return texto;
     }
 
-
     private void ConfigurarColoresBoton(
-        Button boton,
-        Color normal)
+        Button boton)
     {
         ColorBlock colores =
             boton.colors;
 
-
         colores.normalColor =
-            normal;
-
+            Color.white;
 
         colores.highlightedColor =
-            colorTarjetaHover;
-
-
-        colores.pressedColor =
-            new Color32(
-                30,
-                33,
-                40,
-                255
+            new Color(
+                0.92f,
+                0.92f,
+                0.92f,
+                1f
             );
 
+        colores.pressedColor =
+            new Color(
+                0.78f,
+                0.78f,
+                0.78f,
+                1f
+            );
 
         colores.selectedColor =
-            colorTarjetaHover;
+            Color.white;
 
+        colores.disabledColor =
+            new Color(
+                0.5f,
+                0.5f,
+                0.5f,
+                0.5f
+            );
 
         boton.colors =
             colores;
     }
 
+    private void CrearEventSystemSiHaceFalta()
+    {
+        EventSystem actual =
+            UnityEngine.Object.FindFirstObjectByType<
+                EventSystem>();
 
-    // =====================================================
-    // LIMPIEZA EVENTOS
-    // =====================================================
+        if (actual != null)
+            return;
+
+        GameObject objeto =
+            new GameObject(
+                "EventSystem"
+            );
+
+        objeto.AddComponent<
+            EventSystem>();
+
+        objeto.AddComponent<
+            UnityEngine.InputSystem.UI
+                .InputSystemUIInputModule>();
+    }
 
     private void OnDestroy()
     {
