@@ -9,6 +9,8 @@ public class CharacterCreationAutoUI :
     private Button botonCrear;
     private TMP_Text mensaje;
 
+    private CharacterPreview3D preview3D;
+
     private bool procesando;
 
     private const string AvatarSeleccionado =
@@ -30,6 +32,14 @@ public class CharacterCreationAutoUI :
             250
         );
 
+    private readonly Color tarjeta =
+        new Color32(
+            43,
+            47,
+            57,
+            255
+        );
+
     private readonly Color verde =
         new Color32(
             41,
@@ -49,6 +59,7 @@ public class CharacterCreationAutoUI :
     private void Start()
     {
         CrearEventSystemSiHaceFalta();
+
         CrearInterfaz();
     }
 
@@ -169,7 +180,7 @@ public class CharacterCreationAutoUI :
         rect.sizeDelta =
             new Vector2(
                 650f,
-                700f
+                760f
             );
 
         Image imagen =
@@ -197,9 +208,9 @@ public class CharacterCreationAutoUI :
         ConfigurarRect(
             titulo.rectTransform,
             40f,
-            -45f,
+            -35f,
             -40f,
-            -100f
+            -90f
         );
 
         string username =
@@ -220,8 +231,8 @@ public class CharacterCreationAutoUI :
         TMP_Text usuario =
             CrearTexto(
                 padre,
-                "Usuario: " + username,
-                18f,
+                username,
+                19f,
                 FontStyles.Normal
             );
 
@@ -231,13 +242,32 @@ public class CharacterCreationAutoUI :
         ConfigurarRect(
             usuario.rectTransform,
             40f,
-            -105f,
+            -95f,
             -40f,
-            -150f
+            -140f
         );
 
-        CrearTarjetaAvatar(
+        CrearPreview3D(
             padre
+        );
+
+        TMP_Text seleccionado =
+            CrearTexto(
+                padre,
+                "✓ PERSONAJE SELECCIONADO",
+                16f,
+                FontStyles.Bold
+            );
+
+        seleccionado.color =
+            verde;
+
+        ConfigurarRect(
+            seleccionado.rectTransform,
+            50f,
+            -555f,
+            -50f,
+            -600f
         );
 
         botonCrear =
@@ -251,16 +281,16 @@ public class CharacterCreationAutoUI :
             botonCrear
                 .GetComponent<RectTransform>(),
             70f,
-            -535f,
+            -615f,
             -70f,
-            -605f
+            -685f
         );
 
         mensaje =
             CrearTexto(
                 padre,
                 "",
-                16f,
+                15f,
                 FontStyles.Normal
             );
 
@@ -269,80 +299,85 @@ public class CharacterCreationAutoUI :
 
         ConfigurarRect(
             mensaje.rectTransform,
-            50f,
-            -615f,
-            -50f,
-            -665f
+            40f,
+            -695f,
+            -40f,
+            -735f
         );
     }
 
-    private void CrearTarjetaAvatar(
+    private void CrearPreview3D(
         Transform padre)
     {
-        GameObject tarjeta =
+        GameObject contenedor =
             CrearObjetoUI(
-                "AvatarPersonajeBase",
+                "ContenedorPreview3D",
                 padre
             );
 
-        Image fondoTarjeta =
-            tarjeta.AddComponent<Image>();
+        Image fondoPreview =
+            contenedor.AddComponent<Image>();
 
-        fondoTarjeta.color =
-            new Color32(
-                43,
-                47,
-                57,
-                255
-            );
+        fondoPreview.color =
+            tarjeta;
 
         ConfigurarRect(
-            tarjeta.GetComponent<RectTransform>(),
+            contenedor.GetComponent<RectTransform>(),
             100f,
-            -190f,
+            -165f,
             -100f,
-            -470f
+            -540f
         );
 
-        TMP_Text icono =
-            CrearTexto(
-                tarjeta.transform,
-                "PERSONAJE\nBASE",
-                38f,
-                FontStyles.Bold
+        GameObject rawObjeto =
+            CrearObjetoUI(
+                "Personaje3D",
+                contenedor.transform
             );
 
-        icono.alignment =
-            TextAlignmentOptions.Center;
+        RawImage rawImage =
+            rawObjeto.AddComponent<RawImage>();
 
-        icono.color =
+        rawImage.color =
             Color.white;
 
-        ConfigurarRect(
-            icono.rectTransform,
-            20f,
-            -45f,
-            -20f,
-            -175f
-        );
+        rawImage.raycastTarget =
+            false;
 
-        TMP_Text seleccionado =
-            CrearTexto(
-                tarjeta.transform,
-                "✓ SELECCIONADO",
-                17f,
-                FontStyles.Bold
+        RectTransform rawRect =
+            rawObjeto.GetComponent<RectTransform>();
+
+        rawRect.anchorMin =
+            Vector2.zero;
+
+        rawRect.anchorMax =
+            Vector2.one;
+
+        rawRect.offsetMin =
+            new Vector2(
+                20f,
+                10f
             );
 
-        seleccionado.color =
-            verde;
+        rawRect.offsetMax =
+            new Vector2(
+                -20f,
+                -10f
+            );
 
-        ConfigurarRect(
-            seleccionado.rectTransform,
-            20f,
-            -200f,
-            -20f,
-            -250f
+        preview3D =
+            gameObject.GetComponent<
+                CharacterPreview3D>();
+
+        if (preview3D == null)
+        {
+            preview3D =
+                gameObject.AddComponent<
+                    CharacterPreview3D>();
+        }
+
+        preview3D.Inicializar(
+            rawImage
         );
     }
 
