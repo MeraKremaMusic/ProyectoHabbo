@@ -2,9 +2,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Oculta visualmente el Skybox en la habitación y deja un fondo plano.
-/// El Skybox sigue existiendo en RenderSettings para aportar iluminación
-/// y reflejos al sistema de día y noche; la cámara simplemente no lo dibuja.
+/// Mantiene el exterior de HabitacionPrincipal completamente negro.
+/// No usa Skybox visible: solo la geometria de la habitacion se renderiza
+/// sobre un fondo negro solido.
 /// </summary>
 public sealed class RoomBackgroundController : MonoBehaviour
 {
@@ -15,9 +15,6 @@ public sealed class RoomBackgroundController : MonoBehaviour
     }
 
     private const string EscenaHabitacion = "HabitacionPrincipal";
-
-    private static readonly Color FondoHabitacion =
-        new Color32(16, 18, 22, 255);
 
     private Camera camaraPrincipal;
 
@@ -33,7 +30,6 @@ public sealed class RoomBackgroundController : MonoBehaviour
             new GameObject("RoomBackgroundController");
 
         objeto.AddComponent<RoomBackgroundController>();
-
         DontDestroyOnLoad(objeto);
     }
 
@@ -93,17 +89,42 @@ public sealed class RoomBackgroundController : MonoBehaviour
             Debug.LogWarning(
                 "RoomBackgroundController: no se encontro una camara."
             );
+
             return;
         }
 
+        AplicarFondoNegro();
+
+        Debug.Log(
+            "Fondo exterior de la habitacion configurado en negro solido."
+        );
+    }
+
+    private void LateUpdate()
+    {
+        if (
+            SceneManager.GetActiveScene().name != EscenaHabitacion ||
+            camaraPrincipal == null
+        )
+        {
+            return;
+        }
+
+        // Se reafirma al final de cada frame para impedir que otro
+        // componente o configuracion vuelva a mostrar el Skybox.
+        AplicarFondoNegro();
+    }
+
+    private void AplicarFondoNegro()
+    {
         camaraPrincipal.clearFlags =
             CameraClearFlags.SolidColor;
 
         camaraPrincipal.backgroundColor =
-            FondoHabitacion;
+            Color.black;
 
-        Debug.Log(
-            "Fondo de la habitacion limpio: Skybox oculto para la camara."
-        );
+        // El cielo deja de existir visualmente en esta escena.
+        RenderSettings.skybox = null;
+        RenderSettings.fog = false;
     }
 }

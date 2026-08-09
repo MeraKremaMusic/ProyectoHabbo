@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 public sealed class DayNightLightingController :
@@ -14,15 +15,14 @@ public sealed class DayNightLightingController :
         "HabitacionPrincipal";
 
     private Light luzSolar;
-    private Material skyboxRuntime;
 
     private float siguienteActualizacionGI;
 
     private readonly Color colorNoche =
         new Color(
-            0.22f,
-            0.30f,
-            0.50f
+            0.34f,
+            0.40f,
+            0.58f
         );
 
     private readonly Color colorAmanecer =
@@ -37,6 +37,48 @@ public sealed class DayNightLightingController :
             1.00f,
             0.97f,
             0.90f
+        );
+
+    private readonly Color ambienteCieloNoche =
+        new Color(
+            0.18f,
+            0.22f,
+            0.32f
+        );
+
+    private readonly Color ambienteEcuadorNoche =
+        new Color(
+            0.11f,
+            0.14f,
+            0.21f
+        );
+
+    private readonly Color ambienteSueloNoche =
+        new Color(
+            0.07f,
+            0.08f,
+            0.12f
+        );
+
+    private readonly Color ambienteCieloDia =
+        new Color(
+            0.72f,
+            0.77f,
+            0.84f
+        );
+
+    private readonly Color ambienteEcuadorDia =
+        new Color(
+            0.48f,
+            0.50f,
+            0.53f
+        );
+
+    private readonly Color ambienteSueloDia =
+        new Color(
+            0.26f,
+            0.24f,
+            0.22f
         );
 
     [RuntimeInitializeOnLoadMethod(
@@ -97,13 +139,6 @@ public sealed class DayNightLightingController :
 
             Instance = null;
         }
-
-        if (skyboxRuntime != null)
-        {
-            Destroy(
-                skyboxRuntime
-            );
-        }
     }
 
     private void AlCargarEscena(
@@ -121,15 +156,6 @@ public sealed class DayNightLightingController :
     )
     {
         luzSolar = null;
-
-        if (skyboxRuntime != null)
-        {
-            Destroy(
-                skyboxRuntime
-            );
-
-            skyboxRuntime = null;
-        }
 
         if (
             escena.name !=
@@ -171,24 +197,16 @@ public sealed class DayNightLightingController :
         RenderSettings.sun =
             luzSolar;
 
-        if (
-            RenderSettings.skybox != null
-        )
-        {
-            skyboxRuntime =
-                new Material(
-                    RenderSettings.skybox
-                );
+        // La habitacion usa iluminacion ambiental propia.
+        // No dependemos del Skybox, porque el exterior debe ser negro.
+        RenderSettings.ambientMode =
+            AmbientMode.Trilight;
 
-            skyboxRuntime.name =
-                "Skybox Runtime Dia Noche";
-
-            RenderSettings.skybox =
-                skyboxRuntime;
-        }
+        RenderSettings.skybox = null;
+        RenderSettings.fog = false;
 
         Debug.Log(
-            "Iluminacion dia/noche preparada automaticamente."
+            "Iluminacion dia/noche preparada con noche visible y fondo negro."
         );
     }
 
@@ -302,31 +320,47 @@ public sealed class DayNightLightingController :
                 luzDia
             );
 
+        // Antes bajaba hasta 0.025 y la habitacion desaparecia.
+        // Ahora la noche sigue siendo oscura, pero los muebles,
+        // paredes, piso y jugador permanecen visibles.
         luzSolar.intensity =
             Mathf.Lerp(
-                0.025f,
+                0.22f,
                 2f,
                 luzDia
             );
 
-        RenderSettings.ambientIntensity =
-            Mathf.Lerp(
-                0.14f,
-                1f,
+        RenderSettings.ambientSkyColor =
+            Color.Lerp(
+                ambienteCieloNoche,
+                ambienteCieloDia,
                 luzDia
             );
+
+        RenderSettings.ambientEquatorColor =
+            Color.Lerp(
+                ambienteEcuadorNoche,
+                ambienteEcuadorDia,
+                luzDia
+            );
+
+        RenderSettings.ambientGroundColor =
+            Color.Lerp(
+                ambienteSueloNoche,
+                ambienteSueloDia,
+                luzDia
+            );
+
+        // El fondo debe seguir negro independientemente de la hora.
+        RenderSettings.skybox = null;
+        RenderSettings.fog = false;
 
         RenderSettings.reflectionIntensity =
             Mathf.Lerp(
-                0.25f,
+                0.45f,
                 1f,
                 luzDia
             );
-
-        AplicarSkybox(
-            luzDia,
-            calidez
-        );
 
         if (
             Time.unscaledTime >=
@@ -338,61 +372,6 @@ public sealed class DayNightLightingController :
                 2f;
 
             DynamicGI.UpdateEnvironment();
-        }
-    }
-
-    private void AplicarSkybox(
-        float luzDia,
-        float calidez
-    )
-    {
-        if (skyboxRuntime == null)
-            return;
-
-        if (
-            skyboxRuntime.HasProperty(
-                "_Exposure"
-            )
-        )
-        {
-            skyboxRuntime.SetFloat(
-                "_Exposure",
-                Mathf.Lerp(
-                    0.08f,
-                    1f,
-                    luzDia
-                )
-            );
-        }
-
-        if (
-            skyboxRuntime.HasProperty(
-                "_Tint"
-            )
-        )
-        {
-            Color tinteDia =
-                Color.Lerp(
-                    Color.white,
-                    colorAmanecer,
-                    calidez * 0.35f
-                );
-
-            Color tinte =
-                Color.Lerp(
-                    new Color(
-                        0.22f,
-                        0.28f,
-                        0.45f
-                    ),
-                    tinteDia,
-                    luzDia
-                );
-
-            skyboxRuntime.SetColor(
-                "_Tint",
-                tinte
-            );
         }
     }
 }
