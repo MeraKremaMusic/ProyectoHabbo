@@ -34,6 +34,9 @@ public class LoginAutoUI : MonoBehaviour
     private readonly Color boton =
         new Color32(41, 163, 112, 255);
 
+    private readonly Color botonHover =
+        new Color32(53, 185, 130, 255);
+
     private readonly Color textoSecundario =
         new Color32(175, 181, 193, 255);
 
@@ -57,6 +60,9 @@ public class LoginAutoUI : MonoBehaviour
 
         canvas.renderMode =
             RenderMode.ScreenSpaceOverlay;
+
+        canvas.sortingOrder =
+            100;
 
         CanvasScaler scaler =
             canvasObjeto.AddComponent<CanvasScaler>();
@@ -110,6 +116,9 @@ public class LoginAutoUI : MonoBehaviour
 
         imagen.color =
             fondo;
+
+        imagen.raycastTarget =
+            false;
     }
 
     private void CrearPanel(
@@ -133,6 +142,9 @@ public class LoginAutoUI : MonoBehaviour
         rect.pivot =
             new Vector2(0.5f, 0.5f);
 
+        rect.anchoredPosition =
+            Vector2.zero;
+
         rect.sizeDelta =
             new Vector2(520f, 660f);
 
@@ -153,7 +165,7 @@ public class LoginAutoUI : MonoBehaviour
         titulo =
             CrearTexto(
                 padre,
-                "PROYECTO HABBO",
+                "INICIAR SESION",
                 34f,
                 FontStyles.Bold
             );
@@ -248,7 +260,7 @@ public class LoginAutoUI : MonoBehaviour
         );
 
         botonPrincipal =
-            CrearBoton(
+            CrearBotonPrincipal(
                 padre,
                 "INICIAR SESION",
                 EjecutarAccionPrincipal
@@ -302,6 +314,10 @@ public class LoginAutoUI : MonoBehaviour
 
     private void CambiarModoDesdeBoton()
     {
+        Debug.Log(
+            "Cambiando modo de autenticacion."
+        );
+
         CambiarModo(
             !modoRegistro
         );
@@ -322,21 +338,27 @@ public class LoginAutoUI : MonoBehaviour
                 ? "CREAR CUENTA"
                 : "INICIAR SESION";
 
-        botonPrincipal
-            .GetComponentInChildren<TMP_Text>()
-            .text =
-            modoRegistro
-                ? "CREAR CUENTA"
-                : "INICIAR SESION";
+        TMP_Text textoBoton =
+            botonPrincipal
+                .GetComponentInChildren<TMP_Text>();
 
-        cambiarModoTexto.text =
-            modoRegistro
-                ? "Ya tengo una cuenta"
-                : "Crear una cuenta";
+        if (textoBoton != null)
+        {
+            textoBoton.text =
+                modoRegistro
+                    ? "CREAR CUENTA"
+                    : "INICIAR SESION";
+        }
 
-        MostrarMensaje(
-            ""
-        );
+        if (cambiarModoTexto != null)
+        {
+            cambiarModoTexto.text =
+                modoRegistro
+                    ? "Ya tengo una cuenta"
+                    : "Crear una cuenta";
+        }
+
+        MostrarMensaje("");
     }
 
     private async void EjecutarAccionPrincipal()
@@ -351,6 +373,10 @@ public class LoginAutoUI : MonoBehaviour
             MostrarMensaje(
                 "No se encontro el servicio de conexion.",
                 true
+            );
+
+            Debug.LogError(
+                "NakamaAuthService.Instance es null."
             );
 
             return;
@@ -368,7 +394,8 @@ public class LoginAutoUI : MonoBehaviour
                 : "Iniciando sesion..."
         );
 
-        bool correcto;
+        bool correcto =
+            false;
 
         try
         {
@@ -412,7 +439,7 @@ public class LoginAutoUI : MonoBehaviour
         {
             MostrarMensaje(
                 modoRegistro
-                    ? "No se pudo crear la cuenta."
+                    ? "No se pudo crear la cuenta. Revisa los datos."
                     : "Correo o contrasena incorrectos.",
                 true
             );
@@ -423,17 +450,21 @@ public class LoginAutoUI : MonoBehaviour
         MostrarMensaje(
             modoRegistro
                 ? "Cuenta creada correctamente."
-                : "Sesion iniciada correctamente.",
-            false
+                : "Sesion iniciada correctamente."
         );
 
-        Debug.Log(
-            "Usuario autenticado. ID: " +
-            NakamaAuthService
-                .Instance
-                .Session
-                .UserId
-        );
+        if (
+            NakamaAuthService.Instance.Session != null
+        )
+        {
+            Debug.Log(
+                "Usuario autenticado. ID: " +
+                NakamaAuthService
+                    .Instance
+                    .Session
+                    .UserId
+            );
+        }
     }
 
     private TMP_InputField CrearCampo(
@@ -454,8 +485,14 @@ public class LoginAutoUI : MonoBehaviour
         fondoCampo.color =
             campo;
 
+        fondoCampo.raycastTarget =
+            true;
+
         TMP_InputField input =
             contenedor.AddComponent<TMP_InputField>();
+
+        input.targetGraphic =
+            fondoCampo;
 
         GameObject textoObjeto =
             CrearObjetoUI(
@@ -474,6 +511,9 @@ public class LoginAutoUI : MonoBehaviour
 
         texto.alignment =
             TextAlignmentOptions.MidlineLeft;
+
+        texto.raycastTarget =
+            false;
 
         ConfigurarRect(
             texto.rectTransform,
@@ -510,6 +550,9 @@ public class LoginAutoUI : MonoBehaviour
         placeholderTexto.alignment =
             TextAlignmentOptions.MidlineLeft;
 
+        placeholderTexto.raycastTarget =
+            false;
+
         ConfigurarRect(
             placeholderTexto.rectTransform,
             18f,
@@ -535,11 +578,16 @@ public class LoginAutoUI : MonoBehaviour
             input.asteriskChar =
                 '•';
         }
+        else
+        {
+            input.contentType =
+                TMP_InputField.ContentType.Standard;
+        }
 
         return input;
     }
 
-    private Button CrearBoton(
+    private Button CrearBotonPrincipal(
         Transform padre,
         string texto,
         UnityEngine.Events.UnityAction accion)
@@ -556,8 +604,37 @@ public class LoginAutoUI : MonoBehaviour
         imagen.color =
             boton;
 
+        imagen.raycastTarget =
+            true;
+
         Button button =
             objeto.AddComponent<Button>();
+
+        button.targetGraphic =
+            imagen;
+
+        ColorBlock colores =
+            button.colors;
+
+        colores.normalColor =
+            boton;
+
+        colores.highlightedColor =
+            botonHover;
+
+        colores.pressedColor =
+            new Color32(
+                32,
+                130,
+                89,
+                255
+            );
+
+        colores.selectedColor =
+            boton;
+
+        button.colors =
+            colores;
 
         button.onClick.AddListener(
             accion
@@ -573,6 +650,9 @@ public class LoginAutoUI : MonoBehaviour
 
         textoBoton.alignment =
             TextAlignmentOptions.Center;
+
+        textoBoton.raycastTarget =
+            false;
 
         Estirar(
             textoBoton.rectTransform
@@ -591,11 +671,59 @@ public class LoginAutoUI : MonoBehaviour
                 padre
             );
 
+        // IMPORTANTE:
+        // El Button necesita un Graphic para que
+        // el EventSystem pueda detectar el clic.
+        Image zonaClickable =
+            objeto.AddComponent<Image>();
+
+        // Es invisible, pero sigue recibiendo raycasts.
+        zonaClickable.color =
+            new Color(
+                0f,
+                0f,
+                0f,
+                0f
+            );
+
+        zonaClickable.raycastTarget =
+            true;
+
         Button button =
             objeto.AddComponent<Button>();
 
-        button.transition =
-            Selectable.Transition.ColorTint;
+        button.targetGraphic =
+            zonaClickable;
+
+        ColorBlock colores =
+            button.colors;
+
+        colores.normalColor =
+            new Color(
+                1f,
+                1f,
+                1f,
+                1f
+            );
+
+        colores.highlightedColor =
+            new Color(
+                1f,
+                1f,
+                1f,
+                0.85f
+            );
+
+        colores.pressedColor =
+            new Color(
+                1f,
+                1f,
+                1f,
+                0.65f
+            );
+
+        button.colors =
+            colores;
 
         button.onClick.AddListener(
             accion
@@ -614,6 +742,9 @@ public class LoginAutoUI : MonoBehaviour
 
         texto.alignment =
             TextAlignmentOptions.Center;
+
+        texto.raycastTarget =
+            false;
 
         Estirar(
             texto.rectTransform
@@ -744,10 +875,10 @@ public class LoginAutoUI : MonoBehaviour
 
     private void CrearEventSystemSiHaceFalta()
     {
-        if (
-            FindFirstObjectByType<EventSystem>()
-            != null
-        )
+        EventSystem eventSystem =
+            FindFirstObjectByType<EventSystem>();
+
+        if (eventSystem != null)
         {
             return;
         }
@@ -762,5 +893,9 @@ public class LoginAutoUI : MonoBehaviour
         objeto.AddComponent<
             UnityEngine.InputSystem.UI
                 .InputSystemUIInputModule>();
+
+        Debug.Log(
+            "EventSystem creado automaticamente."
+        );
     }
 }
