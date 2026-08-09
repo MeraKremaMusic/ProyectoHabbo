@@ -10,6 +10,10 @@ public static class NetworkBootstrap
         GameObject objeto;
 
 
+        // =====================================================
+        // CREAR NETWORK MANAGER SI NO EXISTE
+        // =====================================================
+
         if (
             NakamaConnection.Instance ==
             null
@@ -43,6 +47,9 @@ public static class NetworkBootstrap
                 FurniturePlacementSyncService>();
 
             objeto.AddComponent<
+                FurniturePickupService>();
+
+            objeto.AddComponent<
                 PlayerInventoryService>();
 
             objeto.AddComponent<
@@ -66,11 +73,19 @@ public static class NetworkBootstrap
         }
 
 
+        // =====================================================
+        // REUTILIZAR NETWORK MANAGER EXISTENTE
+        // =====================================================
+
         objeto =
             NakamaConnection
                 .Instance
                 .gameObject;
 
+
+        // =====================================================
+        // AUTENTICACION
+        // =====================================================
 
         if (
             objeto.GetComponent<
@@ -83,6 +98,10 @@ public static class NetworkBootstrap
         }
 
 
+        // =====================================================
+        // PERFIL
+        // =====================================================
+
         if (
             objeto.GetComponent<
                 NakamaPlayerProfileService>() ==
@@ -93,6 +112,10 @@ public static class NetworkBootstrap
                 NakamaPlayerProfileService>();
         }
 
+
+        // =====================================================
+        // MONEDAS
+        // =====================================================
 
         if (
             objeto.GetComponent<
@@ -105,6 +128,10 @@ public static class NetworkBootstrap
         }
 
 
+        // =====================================================
+        // CATALOGO DE TIENDA
+        // =====================================================
+
         if (
             objeto.GetComponent<
                 FurnitureShopCatalogService>() ==
@@ -115,6 +142,10 @@ public static class NetworkBootstrap
                 FurnitureShopCatalogService>();
         }
 
+
+        // =====================================================
+        // COMPRAS
+        // =====================================================
 
         if (
             objeto.GetComponent<
@@ -127,6 +158,10 @@ public static class NetworkBootstrap
         }
 
 
+        // =====================================================
+        // GUARDAR COLOCACION DE MUEBLES
+        // =====================================================
+
         if (
             objeto.GetComponent<
                 FurniturePlacementSyncService>() ==
@@ -137,6 +172,25 @@ public static class NetworkBootstrap
                 FurniturePlacementSyncService>();
         }
 
+
+        // =====================================================
+        // RECOGER MUEBLES
+        // =====================================================
+
+        if (
+            objeto.GetComponent<
+                FurniturePickupService>() ==
+            null
+        )
+        {
+            objeto.AddComponent<
+                FurniturePickupService>();
+        }
+
+
+        // =====================================================
+        // INVENTARIO
+        // =====================================================
 
         if (
             objeto.GetComponent<
@@ -149,6 +203,10 @@ public static class NetworkBootstrap
         }
 
 
+        // =====================================================
+        // FLUJO DEL JUEGO
+        // =====================================================
+
         if (
             objeto.GetComponent<
                 GameFlowService>() ==
@@ -160,6 +218,10 @@ public static class NetworkBootstrap
         }
 
 
+        // =====================================================
+        // NAVEGACION ENTRE ESCENAS
+        // =====================================================
+
         if (
             objeto.GetComponent<
                 GameFlowNavigator>() ==
@@ -170,6 +232,10 @@ public static class NetworkBootstrap
                 GameFlowNavigator>();
         }
 
+
+        // =====================================================
+        // CONSERVAR ENTRE ESCENAS
+        // =====================================================
 
         Object.DontDestroyOnLoad(
             objeto

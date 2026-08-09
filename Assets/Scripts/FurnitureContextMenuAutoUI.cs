@@ -7,7 +7,7 @@ public class FurnitureContextMenuAutoUI : MonoBehaviour
     private FurnitureSelection selection;
     private FurnitureMove furnitureMove;
     private FurnitureRotation furnitureRotation;
-    private FurnitureDelete furnitureDelete;
+    private FurniturePickup furniturePickup;
     private FurniturePlacement placement;
 
     private Canvas canvas;
@@ -97,8 +97,15 @@ public class FurnitureContextMenuAutoUI : MonoBehaviour
         furnitureRotation =
             GetComponent<FurnitureRotation>();
 
-        furnitureDelete =
-            GetComponent<FurnitureDelete>();
+        furniturePickup =
+    GetComponent<FurniturePickup>();
+
+if (furniturePickup == null)
+{
+    furniturePickup =
+        gameObject.AddComponent<
+            FurniturePickup>();
+}
 
         placement =
             GetComponent<FurniturePlacement>();
@@ -275,12 +282,12 @@ public class FurnitureContextMenuAutoUI : MonoBehaviour
         );
 
         CrearBoton(
-            "Eliminar",
-            new Vector2(469f, 28f),
-            new Vector2(125f, 62f),
-            colorEliminar,
-            AccionEliminar
-        );
+    "Recoger",
+    new Vector2(469f, 28f),
+    new Vector2(125f, 62f),
+    colorBoton,
+    AccionRecoger
+);
     }
 
     private void CrearBoton(
@@ -386,17 +393,22 @@ public class FurnitureContextMenuAutoUI : MonoBehaviour
         }
     }
 
-    private void AccionEliminar()
-    {
-        if (furnitureDelete == null)
-            return;
+   private void AccionRecoger()
+{
+    if (furniturePickup == null)
+        return;
 
-        furnitureDelete.EliminarSeleccionado();
 
-        ultimoSeleccionado = null;
+    furniturePickup
+        .RecogerSeleccionado();
 
-        Ocultar();
-    }
+
+    ultimoSeleccionado =
+        null;
+
+
+    Ocultar();
+}
 
     private void ActualizarInformacion(
         GameObject mueble)

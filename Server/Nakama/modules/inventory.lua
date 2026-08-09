@@ -445,7 +445,245 @@ local function rpc_place_item(
         rotation_y = rotation_y
     })
 end
+-- =====================================================
+-- RECOGER MUEBLE Y DEVOLVERLO AL INVENTARIO
+-- =====================================================
 
+local function rpc_pickup_item(
+    context,
+    payload
+)
+
+    local user_id =
+        require_user(
+            context
+        )
+
+
+    if
+        payload == nil
+        or
+        payload == ""
+    then
+        return error_response(
+            "invalid_payload",
+            "Datos de recogida invalidos."
+        )
+    end
+
+
+    local correcto,
+        data =
+        pcall(
+            nk.json_decode,
+            payload
+        )
+
+
+    if
+        not correcto
+        or
+        data == nil
+    then
+        return error_response(
+            "invalid_payload",
+            "Datos de recogida invalidos."
+        )
+    end
+
+
+    local item_id =
+        data.item_id
+
+
+    local room_id =
+        data.room_id
+        or ""
+
+
+    if
+        item_id == nil
+        or
+        item_id == ""
+    then
+        return error_response(
+            "invalid_item",
+            "El mueble no tiene un identificador valido."
+        )
+    end
+
+
+    -- Solo buscamos el item dentro
+    -- del inventario del usuario autenticado.
+    local objects =
+        nk.storage_read({
+            {
+                collection =
+                    INVENTORY_COLLECTION,
+
+                key =
+                    item_id,
+
+                user_id =
+                    user_id
+            }
+        })
+
+
+    if
+        objects == nil
+        or
+        #objects == 0
+    then
+        return error_response(
+            "item_not_found",
+            "El mueble no pertenece a esta cuenta."
+        )
+    end
+
+
+    local object =
+        objects[1]
+
+
+    local value =
+        object.value
+        or {}
+
+
+    if
+        value.placed ~= true
+    then
+        return error_response(
+            "item_not_placed",
+            "El mueble ya esta en el inventario."
+        )
+    end
+
+
+    -- Si conocemos la habitacion,
+    -- impedimos recoger muebles desde otra.
+    if
+        value.room_id ~= nil
+        and
+        value.room_id ~= ""
+        and
+        room_id ~= ""
+        and
+        value.room_id ~= room_id
+    then
+        return error_response(
+            "wrong_room",
+            "El mueble pertenece a otra habitacion."
+        )
+    end
+
+
+    -- Vuelve al inventario.
+    value.placed =
+        false
+
+
+    value.room_id =
+        ""
+
+
+    value.grid_x =
+        nil
+
+
+    value.grid_z =
+        nil
+
+
+    value.rotation_y =
+        nil
+
+
+    value.placed_at =
+        nil
+
+
+    value.picked_up_at =
+        os.time()
+
+
+    local write = {
+        collection =
+            INVENTORY_COLLECTION,
+
+        key =
+            item_id,
+
+        user_id =
+            user_id,
+
+        value =
+            value,
+
+        version =
+            object.version,
+
+        permission_read =
+            1,
+
+        permission_write =
+            0
+    }
+
+
+    local write_ok,
+        write_error =
+        pcall(
+            nk.storage_write,
+            {
+                write
+            }
+        )
+
+
+    if not write_ok then
+
+        nk.logger_error(
+            "Error recogiendo mueble: " ..
+            tostring(
+                write_error
+            )
+        )
+
+
+        return error_response(
+            "storage_error",
+            "No se pudo recoger el mueble."
+        )
+    end
+
+
+    nk.logger_info(
+        "FURNITURE PICKUP user=" ..
+        user_id ..
+        " item=" ..
+        item_id
+    )
+
+
+    return nk.json_encode({
+        success =
+            true,
+
+        code =
+            "ok",
+
+        message =
+            "Mueble devuelto al inventario.",
+
+        item_id =
+            item_id,
+
+        placed =
+            false
+    })
+end
 
 nk.register_rpc(
     rpc_get_inventory,
@@ -461,4 +699,9 @@ nk.register_rpc(
 
 nk.logger_info(
     "Inventory module loaded."
+)
+
+nk.register_rpc(
+    rpc_pickup_item,
+    "inventory_pickup"
 )
