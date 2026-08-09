@@ -22,7 +22,13 @@ local PRODUCTS = {
         name = "Planta",
         category = "muebles",
         price = 200
-    }
+    },
+    {
+    id = "lampara_1x1",
+    name = "Lampara de pie",
+    category = "muebles",
+    price = 200
+}
 
 }
 
