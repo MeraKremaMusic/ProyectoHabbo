@@ -30,6 +30,9 @@ public static class NetworkBootstrap
                 NakamaPlayerProfileService>();
 
             objeto.AddComponent<
+                PlayerWalletService>();
+
+            objeto.AddComponent<
                 GameFlowService>();
 
             objeto.AddComponent<
@@ -70,6 +73,15 @@ public static class NetworkBootstrap
         {
             objeto.AddComponent<
                 NakamaPlayerProfileService>();
+        }
+
+        if (
+            objeto.GetComponent<
+                PlayerWalletService>() == null
+        )
+        {
+            objeto.AddComponent<
+                PlayerWalletService>();
         }
 
         if (
