@@ -24,10 +24,10 @@ public sealed class FurnitureInventoryCardUI :
     private bool hover;
 
     private readonly Color colorNormal =
-        new Color32(27, 31, 37, 255);
+        new Color32(9, 54, 66, 255);
 
     private readonly Color colorHover =
-        new Color32(32, 37, 44, 255);
+        new Color32(16, 77, 91, 255);
 
     private Vector3 escalaObjetivo =
         Vector3.one;
@@ -65,10 +65,10 @@ public sealed class FurnitureInventoryCardUI :
 
         borde.effectColor =
             new Color32(
-                255,
-                255,
-                255,
-                18
+                226,
+                165,
+                72,
+                58
             );
 
         borde.effectDistance =
@@ -198,10 +198,10 @@ public sealed class FurnitureInventoryCardUI :
 
         bg.color =
             new Color32(
-                9,
-                11,
-                14,
-                235
+                4,
+                37,
+                46,
+                245
             );
 
         Outline outline =
@@ -209,10 +209,10 @@ public sealed class FurnitureInventoryCardUI :
 
         outline.effectColor =
             new Color32(
-                255,
-                255,
-                255,
-                24
+                226,
+                165,
+                72,
+                105
             );
 
         outline.effectDistance =
@@ -494,9 +494,9 @@ public sealed class FurnitureInventoryCardUI :
         Color colorActual =
             seleccionada
                 ? new Color32(
-                    24,
-                    47,
-                    39,
+                    8,
+                    82,
+                    65,
                     255
                 )
                 : (
@@ -525,24 +525,24 @@ if (borde != null)
             borde.effectColor =
                 seleccionada
                     ? new Color32(
-                        35,
-                        214,
-                        139,
-                        230
+                        42,
+                        232,
+                        163,
+                        240
                     )
                     : (
                         hover
                             ? new Color32(
-                                255,
-                                255,
-                                255,
-                                38
+                                65,
+                                202,
+                                210,
+                                120
                             )
                             : new Color32(
-                                255,
-                                255,
-                                255,
-                                18
+                                226,
+                                165,
+                                72,
+                                58
                             )
                     );
 

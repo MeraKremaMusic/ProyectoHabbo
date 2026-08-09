@@ -238,10 +238,10 @@ public class FurnitureInventoryAutoUI :
 
         imagen.color =
             new Color32(
-                10,
-                10,
-                10,
-                245
+                7,
+                48,
+                59,
+                255
             );
 
         Button boton =
@@ -391,9 +391,9 @@ public class FurnitureInventoryAutoUI :
 
         fondo.color =
             new Color32(
-                18,
-                21,
-                26,
+                7,
+                42,
+                53,
                 255
             );
 
@@ -402,10 +402,10 @@ public class FurnitureInventoryAutoUI :
 
         borde.effectColor =
             new Color32(
-                255,
-                255,
-                255,
-                24
+                226,
+                165,
+                72,
+                78
             );
 
         borde.effectDistance =
@@ -595,10 +595,10 @@ public class FurnitureInventoryAutoUI :
 
         bg.color =
             new Color32(
-                255,
-                255,
-                255,
-                14
+                13,
+                65,
+                75,
+                255
             );
 
         Outline bordeCerrar =
@@ -606,10 +606,10 @@ public class FurnitureInventoryAutoUI :
 
         bordeCerrar.effectColor =
             new Color32(
-                255,
-                255,
-                255,
-                20
+                226,
+                165,
+                72,
+                78
             );
 
         bordeCerrar.effectDistance =
@@ -713,10 +713,10 @@ public class FurnitureInventoryAutoUI :
 
         bg.color =
             new Color32(
-                12,
-                15,
-                19,
-                245
+                7,
+                51,
+                63,
+                255
             );
 
         Outline borde =
@@ -724,10 +724,10 @@ public class FurnitureInventoryAutoUI :
 
         borde.effectColor =
             new Color32(
-                255,
-                255,
-                255,
-                22
+                226,
+                165,
+                72,
+                62
             );
 
         borde.effectDistance =
@@ -795,9 +795,9 @@ public class FurnitureInventoryAutoUI :
 
         placeholder.color =
             new Color32(
-                125,
-                132,
-                143,
+                145,
+                190,
+                193,
                 255
             );
 
@@ -924,10 +924,10 @@ public class FurnitureInventoryAutoUI :
 
         fondoCategorias.color =
             new Color32(
-                12,
-                15,
-                19,
-                238
+                8,
+                51,
+                63,
+                255
             );
 
         Outline bordeCategorias =
@@ -935,10 +935,10 @@ public class FurnitureInventoryAutoUI :
 
         bordeCategorias.effectColor =
             new Color32(
-                255,
-                255,
-                255,
-                18
+                226,
+                165,
+                72,
+                48
             );
 
         bordeCategorias.effectDistance =
@@ -1189,9 +1189,9 @@ public class FurnitureInventoryAutoUI :
                 bg.color =
                     activo
                         ? new Color32(
-                            8,
-                            87,
-                            60,
+                            9,
+                            151,
+                            117,
                             255
                         )
                         : new Color32(
@@ -1237,9 +1237,9 @@ public class FurnitureInventoryAutoUI :
                 imagen.color =
                     activo
                         ? new Color32(
-                            73,
-                            235,
-                            171,
+                            125,
+                            255,
+                            206,
                             255
                         )
                         : GameUITheme
@@ -1454,10 +1454,10 @@ public class FurnitureInventoryAutoUI :
 
         linea.color =
             new Color32(
-                255,
-                255,
-                255,
-                17
+                226,
+                165,
+                72,
+                40
             );
 
         linea.raycastTarget =
@@ -2023,15 +2023,15 @@ public class FurnitureInventoryAutoUI :
             fondoBotonColocar.color =
                 tieneSeleccion
                     ? new Color32(
-                        8,
-                        113,
-                        75,
+                        226,
+                        145,
+                        23,
                         255
                     )
                     : new Color32(
-                        42,
-                        48,
-                        54,
+                        52,
+                        68,
+                        73,
                         255
                     );
         }
