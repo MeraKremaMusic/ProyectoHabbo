@@ -1,61 +1,165 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CharacterPreview3D : MonoBehaviour
+public class CharacterPreview3D :
+    MonoBehaviour
 {
-    private const int PreviewLayer = 31;
+    private const int PreviewLayer =
+        31;
 
     private GameObject mundoPreview;
     private GameObject modelo;
+
     private Camera camara;
+
     private RenderTexture renderTexture;
 
-    private float velocidadRotacion = 18f;
+    private RawImage destino;
 
-    public void Inicializar(RawImage destino)
+    private bool inicializado;
+
+    private float velocidadRotacion =
+        18f;
+
+    public string AvatarActual
     {
-        if (destino == null)
+        get;
+        private set;
+    }
+
+    public void Inicializar(
+        RawImage rawImage,
+        string avatarId)
+    {
+        if (rawImage == null)
         {
             Debug.LogError(
-                "CharacterPreview3D: no existe RawImage."
+                "CharacterPreview3D: " +
+                "RawImage es null."
+            );
+
+            return;
+        }
+
+        destino =
+            rawImage;
+
+        if (!inicializado)
+        {
+            CrearInfraestructura();
+
+            inicializado =
+                true;
+        }
+
+        MostrarAvatar(
+            avatarId
+        );
+    }
+
+    public void MostrarAvatar(
+        string avatarId)
+    {
+        if (!inicializado)
+        {
+            Debug.LogWarning(
+                "CharacterPreview3D " +
+                "todavia no esta inicializado."
             );
 
             return;
         }
 
         GameObject prefab =
-            Resources.Load<GameObject>(
-                "Characters/PersonajePreview"
+            AvatarRegistry.CargarPrefab(
+                avatarId
             );
 
         if (prefab == null)
+            return;
+
+        if (modelo != null)
         {
-            Debug.LogError(
-                "No se encontro Resources/Characters/PersonajePreview.prefab"
+            Destroy(
+                modelo
             );
 
-            return;
+            modelo =
+                null;
         }
 
-        CrearRenderTexture(destino);
-        CrearMundoPreview();
-        CrearModelo(prefab);
-        CrearCamara();
-        CrearIluminacion();
+        modelo =
+            Instantiate(
+                prefab,
+                mundoPreview.transform,
+                false
+            );
+
+        modelo.name =
+            "Preview_" +
+            avatarId;
+
+        modelo.transform.localPosition =
+            prefab.transform.localPosition;
+
+        // En nuestro modelo actual esto hace
+        // que empiece mirando hacia el frente.
+        modelo.transform.localRotation =
+            prefab.transform.localRotation *
+            Quaternion.Euler(
+                0f,
+                180f,
+                0f
+            );
+
+        modelo.transform.localScale =
+            prefab.transform.localScale;
+
+        AplicarLayerRecursivo(
+            modelo,
+            PreviewLayer
+        );
+
+        Animator animator =
+            modelo.GetComponentInChildren<
+                Animator>(
+                true
+            );
+
+        if (animator != null)
+        {
+            animator.applyRootMotion =
+                false;
+
+            animator.Rebind();
+            animator.Update(0f);
+        }
+
+        AvatarActual =
+            avatarId;
+
         EncajarPersonaje();
 
         Debug.Log(
-            "Preview 3D del personaje creado."
+            "Preview mostrando avatar -> " +
+            avatarId
         );
     }
 
-    private void CrearRenderTexture(
-        RawImage destino)
+    private void CrearInfraestructura()
+    {
+        CrearRenderTexture();
+        CrearMundoPreview();
+        CrearCamara();
+        CrearIluminacion();
+    }
+
+    private void CrearRenderTexture()
     {
         renderTexture =
             new RenderTexture(
-                600,
                 700,
+                760,
                 24,
                 RenderTextureFormat.ARGB32
             );
@@ -79,7 +183,6 @@ public class CharacterPreview3D : MonoBehaviour
                 "CharacterPreviewWorld"
             );
 
-        // Lo ponemos muy lejos de la habitación.
         mundoPreview.transform.position =
             new Vector3(
                 1000f,
@@ -88,48 +191,20 @@ public class CharacterPreview3D : MonoBehaviour
             );
     }
 
-    private void CrearModelo(
-        GameObject prefab)
-    {
-        modelo =
-            Instantiate(
-                prefab,
-                mundoPreview.transform
-            );
-
-        modelo.name =
-            "PersonajePreview3D";
-
-        modelo.transform.localPosition =
-            Vector3.zero;
-
-        modelo.transform.localRotation =
-            Quaternion.Euler(
-                0f,
-                180f,
-                0f
-            );
-
-        AplicarLayerRecursivo(
-            modelo,
-            PreviewLayer
-        );
-    }
-
     private void CrearCamara()
     {
-        GameObject objetoCamara =
+        GameObject objeto =
             new GameObject(
                 "PreviewCamera"
             );
 
-        objetoCamara.transform.SetParent(
+        objeto.transform.SetParent(
             mundoPreview.transform,
             false
         );
 
         camara =
-            objetoCamara.AddComponent<Camera>();
+            objeto.AddComponent<Camera>();
 
         camara.orthographic =
             true;
@@ -155,55 +230,63 @@ public class CharacterPreview3D : MonoBehaviour
             0.01f;
 
         camara.farClipPlane =
-            100f;
+            500f;
     }
 
     private void CrearIluminacion()
     {
-        GameObject objetoLuz =
+        GameObject luzPrincipalObjeto =
             new GameObject(
                 "PreviewLight"
             );
 
-        objetoLuz.transform.SetParent(
-            mundoPreview.transform,
-            false
-        );
-
-        Light luz =
-            objetoLuz.AddComponent<Light>();
-
-        luz.type =
-            LightType.Directional;
-
-        luz.intensity =
-            1.5f;
-
-        luz.shadows =
-            LightShadows.None;
-
-        luz.cullingMask =
-            1 << PreviewLayer;
-
-        objetoLuz.transform.rotation =
-            Quaternion.Euler(
-                35f,
-                -35f,
-                0f
+        luzPrincipalObjeto
+            .transform
+            .SetParent(
+                mundoPreview.transform,
+                false
             );
 
-        GameObject objetoLuzRelleno =
+        Light luzPrincipal =
+            luzPrincipalObjeto
+                .AddComponent<Light>();
+
+        luzPrincipal.type =
+            LightType.Directional;
+
+        luzPrincipal.intensity =
+            1.5f;
+
+        luzPrincipal.shadows =
+            LightShadows.None;
+
+        luzPrincipal.cullingMask =
+            1 << PreviewLayer;
+
+        luzPrincipalObjeto
+            .transform
+            .rotation =
+                Quaternion.Euler(
+                    35f,
+                    -35f,
+                    0f
+                );
+
+        GameObject rellenoObjeto =
             new GameObject(
                 "PreviewFillLight"
             );
 
-        objetoLuzRelleno.transform.SetParent(
-            mundoPreview.transform,
-            false
-        );
+        rellenoObjeto
+            .transform
+            .SetParent(
+                mundoPreview.transform,
+                false
+            );
 
         Light relleno =
-            objetoLuzRelleno.AddComponent<Light>();
+            rellenoObjeto
+                .AddComponent<Light>();
 
         relleno.type =
             LightType.Directional;
@@ -217,30 +300,31 @@ public class CharacterPreview3D : MonoBehaviour
         relleno.cullingMask =
             1 << PreviewLayer;
 
-        objetoLuzRelleno.transform.rotation =
-            Quaternion.Euler(
-                20f,
-                140f,
-                0f
-            );
+        rellenoObjeto
+            .transform
+            .rotation =
+                Quaternion.Euler(
+                    20f,
+                    140f,
+                    0f
+                );
     }
 
     private void EncajarPersonaje()
     {
-        Renderer[] renderers =
-            modelo.GetComponentsInChildren<Renderer>();
-
         if (
-            renderers == null ||
-            renderers.Length == 0
+            modelo == null ||
+            camara == null
         )
         {
-            Debug.LogWarning(
-                "El personaje no tiene Renderers."
-            );
-
             return;
         }
+
+        Renderer[] renderers =
+            modelo.GetComponentsInChildren<
+                Renderer>(
+                true
+            );
 
         bool encontrado =
             false;
@@ -278,30 +362,54 @@ public class CharacterPreview3D : MonoBehaviour
         }
 
         if (!encontrado)
+        {
+            Debug.LogWarning(
+                "El avatar no tiene Renderers."
+            );
+
             return;
+        }
+
+        float altura =
+            Mathf.Max(
+                bounds.size.y,
+                0.1f
+            );
+
+        float ancho =
+            Mathf.Max(
+                bounds.size.x,
+                0.1f
+            );
 
         Vector3 centro =
             bounds.center;
 
-        float altura =
-            bounds.size.y;
+        float tamanoVertical =
+            altura * 0.58f;
+
+        float tamanoHorizontal =
+            ancho /
+            Mathf.Max(
+                0.1f,
+                2f * camara.aspect
+            ) *
+            1.2f;
 
         camara.orthographicSize =
             Mathf.Max(
                 0.5f,
-                altura * 0.62f
+                tamanoVertical,
+                tamanoHorizontal
             );
 
-        Vector3 posicionCamara =
+        camara.transform.position =
             centro +
             new Vector3(
                 0f,
                 altura * 0.03f,
                 altura * 2f
             );
-
-        camara.transform.position =
-            posicionCamara;
 
         camara.transform.LookAt(
             centro +

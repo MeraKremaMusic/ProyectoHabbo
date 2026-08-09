@@ -7,14 +7,25 @@ public class CharacterCreationAutoUI :
     MonoBehaviour
 {
     private Button botonCrear;
+
+    private Button botonAnterior;
+    private Button botonSiguiente;
+
     private TMP_Text mensaje;
+    private TMP_Text nombreAvatar;
+    private TMP_Text contadorAvatar;
+
+    private RawImage previewRawImage;
 
     private CharacterPreview3D preview3D;
 
-    private bool procesando;
+    private AvatarDefinition[] avatares;
 
-    private const string AvatarSeleccionado =
-        "personaje_base";
+    private AvatarDefinition avatarSeleccionado;
+
+    private int indiceActual;
+
+    private bool procesando;
 
     private readonly Color fondo =
         new Color32(
@@ -58,9 +69,15 @@ public class CharacterCreationAutoUI :
 
     private void Start()
     {
+        avatares =
+            AvatarRegistry
+                .ObtenerAvatares();
+
         CrearEventSystemSiHaceFalta();
 
         CrearInterfaz();
+
+        InicializarSelector();
     }
 
     private void CrearInterfaz()
@@ -72,7 +89,8 @@ public class CharacterCreationAutoUI :
             );
 
         Canvas canvas =
-            canvasObjeto.AddComponent<Canvas>();
+            canvasObjeto.AddComponent<
+                Canvas>();
 
         canvas.renderMode =
             RenderMode.ScreenSpaceOverlay;
@@ -81,8 +99,8 @@ public class CharacterCreationAutoUI :
             200;
 
         CanvasScaler scaler =
-            canvasObjeto
-                .AddComponent<CanvasScaler>();
+            canvasObjeto.AddComponent<
+                CanvasScaler>();
 
         scaler.uiScaleMode =
             CanvasScaler
@@ -120,7 +138,8 @@ public class CharacterCreationAutoUI :
             );
 
         RectTransform rect =
-            objeto.GetComponent<RectTransform>();
+            objeto.GetComponent<
+                RectTransform>();
 
         rect.anchorMin =
             Vector2.zero;
@@ -154,7 +173,8 @@ public class CharacterCreationAutoUI :
             );
 
         RectTransform rect =
-            objeto.GetComponent<RectTransform>();
+            objeto.GetComponent<
+                RectTransform>();
 
         rect.anchorMin =
             new Vector2(
@@ -179,8 +199,8 @@ public class CharacterCreationAutoUI :
 
         rect.sizeDelta =
             new Vector2(
-                650f,
-                760f
+                720f,
+                820f
             );
 
         Image imagen =
@@ -208,9 +228,9 @@ public class CharacterCreationAutoUI :
         ConfigurarRect(
             titulo.rectTransform,
             40f,
-            -35f,
+            -30f,
             -40f,
-            -90f
+            -85f
         );
 
         string username =
@@ -242,48 +262,33 @@ public class CharacterCreationAutoUI :
         ConfigurarRect(
             usuario.rectTransform,
             40f,
-            -95f,
+            -90f,
             -40f,
-            -140f
+            -135f
         );
 
         CrearPreview3D(
             padre
         );
 
-        TMP_Text seleccionado =
-            CrearTexto(
-                padre,
-                "✓ PERSONAJE SELECCIONADO",
-                16f,
-                FontStyles.Bold
-            );
-
-        seleccionado.color =
-            verde;
-
-        ConfigurarRect(
-            seleccionado.rectTransform,
-            50f,
-            -555f,
-            -50f,
-            -600f
+        CrearSelector(
+            padre
         );
 
         botonCrear =
-            CrearBoton(
+            CrearBotonPrincipal(
                 padre,
                 "CREAR PERSONAJE",
                 CrearPersonaje
             );
 
         ConfigurarRect(
-            botonCrear
-                .GetComponent<RectTransform>(),
-            70f,
-            -615f,
-            -70f,
-            -685f
+            botonCrear.GetComponent<
+                RectTransform>(),
+            80f,
+            -690f,
+            -80f,
+            -755f
         );
 
         mensaje =
@@ -300,9 +305,9 @@ public class CharacterCreationAutoUI :
         ConfigurarRect(
             mensaje.rectTransform,
             40f,
-            -695f,
+            -760f,
             -40f,
-            -735f
+            -805f
         );
     }
 
@@ -322,11 +327,12 @@ public class CharacterCreationAutoUI :
             tarjeta;
 
         ConfigurarRect(
-            contenedor.GetComponent<RectTransform>(),
-            100f,
-            -165f,
-            -100f,
-            -540f
+            contenedor.GetComponent<
+                RectTransform>(),
+            130f,
+            -155f,
+            -130f,
+            -535f
         );
 
         GameObject rawObjeto =
@@ -335,17 +341,19 @@ public class CharacterCreationAutoUI :
                 contenedor.transform
             );
 
-        RawImage rawImage =
-            rawObjeto.AddComponent<RawImage>();
+        previewRawImage =
+            rawObjeto.AddComponent<
+                RawImage>();
 
-        rawImage.color =
+        previewRawImage.color =
             Color.white;
 
-        rawImage.raycastTarget =
+        previewRawImage.raycastTarget =
             false;
 
         RectTransform rawRect =
-            rawObjeto.GetComponent<RectTransform>();
+            rawObjeto.GetComponent<
+                RectTransform>();
 
         rawRect.anchorMin =
             Vector2.zero;
@@ -355,18 +363,18 @@ public class CharacterCreationAutoUI :
 
         rawRect.offsetMin =
             new Vector2(
-                20f,
+                15f,
                 10f
             );
 
         rawRect.offsetMax =
             new Vector2(
-                -20f,
+                -15f,
                 -10f
             );
 
         preview3D =
-            gameObject.GetComponent<
+            GetComponent<
                 CharacterPreview3D>();
 
         if (preview3D == null)
@@ -375,9 +383,241 @@ public class CharacterCreationAutoUI :
                 gameObject.AddComponent<
                     CharacterPreview3D>();
         }
+    }
 
-        preview3D.Inicializar(
-            rawImage
+    private void CrearSelector(
+        Transform padre)
+    {
+        botonAnterior =
+            CrearBotonFlecha(
+                padre,
+                "<",
+                AvatarAnterior
+            );
+
+        ConfigurarRect(
+            botonAnterior.GetComponent<
+                RectTransform>(),
+            110f,
+            -555f,
+            -520f,
+            -625f
+        );
+
+        botonSiguiente =
+            CrearBotonFlecha(
+                padre,
+                ">",
+                AvatarSiguiente
+            );
+
+        ConfigurarRect(
+            botonSiguiente.GetComponent<
+                RectTransform>(),
+            520f,
+            -555f,
+            -110f,
+            -625f
+        );
+
+        nombreAvatar =
+            CrearTexto(
+                padre,
+                "",
+                21f,
+                FontStyles.Bold
+            );
+
+        ConfigurarRect(
+            nombreAvatar.rectTransform,
+            200f,
+            -550f,
+            -200f,
+            -590f
+        );
+
+        contadorAvatar =
+            CrearTexto(
+                padre,
+                "",
+                15f,
+                FontStyles.Normal
+            );
+
+        contadorAvatar.color =
+            gris;
+
+        ConfigurarRect(
+            contadorAvatar.rectTransform,
+            200f,
+            -590f,
+            -200f,
+            -625f
+        );
+
+        TMP_Text seleccionado =
+            CrearTexto(
+                padre,
+                "PERSONAJE SELECCIONADO",
+                15f,
+                FontStyles.Bold
+            );
+
+        seleccionado.color =
+            verde;
+
+        ConfigurarRect(
+            seleccionado.rectTransform,
+            100f,
+            -635f,
+            -100f,
+            -675f
+        );
+    }
+
+    private void InicializarSelector()
+    {
+        if (
+            avatares == null ||
+            avatares.Length == 0
+        )
+        {
+            botonCrear.interactable =
+                false;
+
+            botonAnterior.interactable =
+                false;
+
+            botonSiguiente.interactable =
+                false;
+
+            MostrarMensaje(
+                "No hay avatares disponibles.",
+                true
+            );
+
+            Debug.LogError(
+                "No existen prefabs en " +
+                "Resources/Characters."
+            );
+
+            return;
+        }
+
+        indiceActual =
+            0;
+
+        ActualizarSeleccion();
+    }
+
+    private void AvatarAnterior()
+    {
+        if (
+            procesando ||
+            avatares == null ||
+            avatares.Length <= 1
+        )
+        {
+            return;
+        }
+
+        indiceActual--;
+
+        if (indiceActual < 0)
+        {
+            indiceActual =
+                avatares.Length - 1;
+        }
+
+        ActualizarSeleccion();
+    }
+
+    private void AvatarSiguiente()
+    {
+        if (
+            procesando ||
+            avatares == null ||
+            avatares.Length <= 1
+        )
+        {
+            return;
+        }
+
+        indiceActual++;
+
+        if (
+            indiceActual >=
+            avatares.Length
+        )
+        {
+            indiceActual =
+                0;
+        }
+
+        ActualizarSeleccion();
+    }
+
+    private void ActualizarSeleccion()
+    {
+        if (
+            avatares == null ||
+            avatares.Length == 0
+        )
+        {
+            return;
+        }
+
+        avatarSeleccionado =
+            avatares[
+                indiceActual
+            ];
+
+        nombreAvatar.text =
+            avatarSeleccionado.Nombre;
+
+        contadorAvatar.text =
+            (indiceActual + 1) +
+            " / " +
+            avatares.Length;
+
+        bool hayVarios =
+            avatares.Length > 1;
+
+        botonAnterior.interactable =
+            hayVarios;
+
+        botonSiguiente.interactable =
+            hayVarios;
+
+        if (
+            preview3D != null &&
+            previewRawImage != null
+        )
+        {
+            if (
+                string.IsNullOrWhiteSpace(
+                    preview3D.AvatarActual
+                )
+            )
+            {
+                preview3D.Inicializar(
+                    previewRawImage,
+                    avatarSeleccionado.Id
+                );
+            }
+            else
+            {
+                preview3D.MostrarAvatar(
+                    avatarSeleccionado.Id
+                );
+            }
+        }
+
+        MostrarMensaje("");
+
+        Debug.Log(
+            "Avatar seleccionado -> " +
+            avatarSeleccionado.Id
         );
     }
 
@@ -385,6 +625,16 @@ public class CharacterCreationAutoUI :
     {
         if (procesando)
             return;
+
+        if (avatarSeleccionado == null)
+        {
+            MostrarMensaje(
+                "Selecciona un personaje.",
+                true
+            );
+
+            return;
+        }
 
         if (
             NakamaPlayerProfileService
@@ -405,6 +655,12 @@ public class CharacterCreationAutoUI :
         botonCrear.interactable =
             false;
 
+        botonAnterior.interactable =
+            false;
+
+        botonSiguiente.interactable =
+            false;
+
         MostrarMensaje(
             "Guardando personaje..."
         );
@@ -413,7 +669,7 @@ public class CharacterCreationAutoUI :
             await NakamaPlayerProfileService
                 .Instance
                 .CrearPersonaje(
-                    AvatarSeleccionado
+                    avatarSeleccionado.Id
                 );
 
         if (!correcto)
@@ -423,6 +679,16 @@ public class CharacterCreationAutoUI :
 
             botonCrear.interactable =
                 true;
+
+            bool hayVarios =
+                avatares != null &&
+                avatares.Length > 1;
+
+            botonAnterior.interactable =
+                hayVarios;
+
+            botonSiguiente.interactable =
+                hayVarios;
 
             MostrarMensaje(
                 "No se pudo guardar el personaje.",
@@ -438,7 +704,7 @@ public class CharacterCreationAutoUI :
 
         Debug.Log(
             "PERSONAJE CREADO -> " +
-            AvatarSeleccionado
+            avatarSeleccionado.Id
         );
 
         if (
@@ -451,7 +717,7 @@ public class CharacterCreationAutoUI :
         }
     }
 
-    private Button CrearBoton(
+    private Button CrearBotonPrincipal(
         Transform padre,
         string texto,
         UnityEngine.Events.UnityAction accion)
@@ -489,8 +755,53 @@ public class CharacterCreationAutoUI :
                 FontStyles.Bold
             );
 
-        textoBoton.raycastTarget =
-            false;
+        textoBoton.alignment =
+            TextAlignmentOptions.Center;
+
+        Estirar(
+            textoBoton.rectTransform
+        );
+
+        return boton;
+    }
+
+    private Button CrearBotonFlecha(
+        Transform padre,
+        string texto,
+        UnityEngine.Events.UnityAction accion)
+    {
+        GameObject objeto =
+            CrearObjetoUI(
+                "BotonFlecha",
+                padre
+            );
+
+        Image imagen =
+            objeto.AddComponent<Image>();
+
+        imagen.color =
+            tarjeta;
+
+        imagen.raycastTarget =
+            true;
+
+        Button boton =
+            objeto.AddComponent<Button>();
+
+        boton.targetGraphic =
+            imagen;
+
+        boton.onClick.AddListener(
+            accion
+        );
+
+        TMP_Text textoBoton =
+            CrearTexto(
+                objeto.transform,
+                texto,
+                30f,
+                FontStyles.Bold
+            );
 
         textoBoton.alignment =
             TextAlignmentOptions.Center;
@@ -635,8 +946,8 @@ public class CharacterCreationAutoUI :
     private void CrearEventSystemSiHaceFalta()
     {
         if (
-            FindAnyObjectByType<EventSystem>()
-            != null
+            FindAnyObjectByType<
+                EventSystem>() != null
         )
         {
             return;
@@ -647,7 +958,8 @@ public class CharacterCreationAutoUI :
                 "EventSystem"
             );
 
-        objeto.AddComponent<EventSystem>();
+        objeto.AddComponent<
+            EventSystem>();
 
         objeto.AddComponent<
             UnityEngine.InputSystem.UI
