@@ -9,11 +9,11 @@ public static class NetworkBootstrap
     {
         GameObject objeto;
 
-        // Si todavía no existe NetworkManager,
-        // lo creamos completo automáticamente.
-        if (
-            NakamaConnection.Instance == null
-        )
+        // =====================================================
+        // SI NO EXISTE NETWORKMANAGER, LO CREAMOS
+        // =====================================================
+
+        if (NakamaConnection.Instance == null)
         {
             objeto =
                 new GameObject(
@@ -33,14 +33,19 @@ public static class NetworkBootstrap
                 PlayerWalletService>();
 
             objeto.AddComponent<
+                FurnitureShopCatalogService>();
+
+            objeto.AddComponent<
                 GameFlowService>();
 
             objeto.AddComponent<
                 GameFlowNavigator>();
 
+
             Object.DontDestroyOnLoad(
                 objeto
             );
+
 
             Debug.Log(
                 "NetworkManager creado automaticamente."
@@ -49,13 +54,20 @@ public static class NetworkBootstrap
             return;
         }
 
-        // Si ya existe NetworkManager,
-        // reutilizamos el mismo objeto
-        // y añadimos cualquier servicio que falte.
+
+        // =====================================================
+        // SI YA EXISTE, REUTILIZAMOS EL MISMO
+        // =====================================================
+
         objeto =
             NakamaConnection
                 .Instance
                 .gameObject;
+
+
+        // =====================================================
+        // AUTENTICACION
+        // =====================================================
 
         if (
             objeto.GetComponent<
@@ -66,6 +78,11 @@ public static class NetworkBootstrap
                 NakamaAuthService>();
         }
 
+
+        // =====================================================
+        // PERFIL DEL JUGADOR
+        // =====================================================
+
         if (
             objeto.GetComponent<
                 NakamaPlayerProfileService>() == null
@@ -74,6 +91,11 @@ public static class NetworkBootstrap
             objeto.AddComponent<
                 NakamaPlayerProfileService>();
         }
+
+
+        // =====================================================
+        // MONEDAS / WALLET
+        // =====================================================
 
         if (
             objeto.GetComponent<
@@ -84,6 +106,25 @@ public static class NetworkBootstrap
                 PlayerWalletService>();
         }
 
+
+        // =====================================================
+        // CATALOGO DE LA TIENDA
+        // =====================================================
+
+        if (
+            objeto.GetComponent<
+                FurnitureShopCatalogService>() == null
+        )
+        {
+            objeto.AddComponent<
+                FurnitureShopCatalogService>();
+        }
+
+
+        // =====================================================
+        // FLUJO DEL JUEGO
+        // =====================================================
+
         if (
             objeto.GetComponent<
                 GameFlowService>() == null
@@ -92,6 +133,11 @@ public static class NetworkBootstrap
             objeto.AddComponent<
                 GameFlowService>();
         }
+
+
+        // =====================================================
+        // CAMBIO ENTRE ESCENAS
+        // =====================================================
 
         if (
             objeto.GetComponent<
@@ -102,9 +148,15 @@ public static class NetworkBootstrap
                 GameFlowNavigator>();
         }
 
+
+        // =====================================================
+        // CONSERVAR ENTRE ESCENAS
+        // =====================================================
+
         Object.DontDestroyOnLoad(
             objeto
         );
+
 
         Debug.Log(
             "NetworkManager verificado y completado."
