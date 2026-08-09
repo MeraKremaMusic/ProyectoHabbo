@@ -629,6 +629,7 @@ MonoBehaviour:
   muebles:
   - {fileID: 7994256470457331996, guid: a47df7211d39c464bb467697a00016a7, type: 3}
   - {fileID: 21987929550664998, guid: b83219f0805d3d441bacf5896eed3aeb, type: 3}
+  - {fileID: 1623726178357347401, guid: fa8ac783142545548b14e62d93e4baec, type: 3}
 --- !u!114 &735926858
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -696,8 +697,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 715393b328755304ab8b4944a371ad85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FurnitureDelete
-  selection: {fileID: 735926860}
-  placement: {fileID: 735926849}
 --- !u!114 &735926863
 MonoBehaviour:
   m_ObjectHideFlags: 0
