@@ -435,17 +435,30 @@ public class LoginAutoUI : MonoBehaviour
         botonPrincipal.interactable =
             true;
 
-        if (!correcto)
-        {
-            MostrarMensaje(
-                modoRegistro
-                    ? "No se pudo crear la cuenta. Revisa los datos."
-                    : "Correo o contrasena incorrectos.",
-                true
-            );
+       if (!correcto)
+{
+    string error =
+        NakamaAuthService
+            .Instance
+            .UltimoError;
 
-            return;
-        }
+    if (
+        string.IsNullOrWhiteSpace(
+            error
+        )
+    )
+    {
+        error =
+            "No se pudo completar la operacion.";
+    }
+
+    MostrarMensaje(
+        error,
+        true
+    );
+
+    return;
+}
 
         MostrarMensaje(
             modoRegistro
