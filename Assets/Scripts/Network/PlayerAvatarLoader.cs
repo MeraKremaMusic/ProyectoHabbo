@@ -1,8 +1,7 @@
 using UnityEngine;
 
 [DefaultExecutionOrder(-1000)]
-public class PlayerAvatarLoader :
-    MonoBehaviour
+public class PlayerAvatarLoader : MonoBehaviour
 {
     public bool AvatarCargado
     {
@@ -18,74 +17,61 @@ public class PlayerAvatarLoader :
 
     private void Start()
     {
-        IntentarCargarAvatar();
+        CargarAvatarCorrespondiente();
     }
 
-    private void IntentarCargarAvatar()
+    private void CargarAvatarCorrespondiente()
     {
-        // Si abrimos HabitacionPrincipal
-        // directamente desde el editor,
-        // conservamos el personaje manual.
+        string avatarId =
+            AvatarRegistry.PersonajeBase;
+
+        // Si existe una sesion real,
+        // usamos el avatar guardado en Nakama.
         if (
-            NakamaAuthService.Instance == null ||
-            !NakamaAuthService
-                .Instance
-                .EstaAutenticado
+            NakamaAuthService.Instance != null &&
+            NakamaAuthService.Instance.EstaAutenticado &&
+            NakamaPlayerProfileService.Instance != null
         )
+        {
+            PlayerProfileData perfil =
+                NakamaPlayerProfileService
+                    .Instance
+                    .PerfilActual;
+
+            if (
+                perfil != null &&
+                perfil.personajeCreado &&
+                !string.IsNullOrWhiteSpace(
+                    perfil.avatarId
+                )
+            )
+            {
+                avatarId =
+                    perfil.avatarId;
+
+                Debug.Log(
+                    "Avatar obtenido desde Nakama: " +
+                    avatarId
+                );
+            }
+            else
+            {
+                Debug.Log(
+                    "Perfil sin avatar. " +
+                    "Usando personaje_base."
+                );
+            }
+        }
+        else
         {
             Debug.Log(
-                "AvatarLoader: no hay sesion. " +
-                "Se conserva el avatar de la escena."
+                "Sin sesion activa. " +
+                "Usando personaje_base para pruebas."
             );
-
-            return;
-        }
-
-        if (
-            NakamaPlayerProfileService
-                .Instance == null
-        )
-        {
-            Debug.LogWarning(
-                "AvatarLoader: no existe " +
-                "NakamaPlayerProfileService."
-            );
-
-            return;
-        }
-
-        PlayerProfileData perfil =
-            NakamaPlayerProfileService
-                .Instance
-                .PerfilActual;
-
-        if (perfil == null)
-        {
-            Debug.LogWarning(
-                "AvatarLoader: el perfil " +
-                "todavia no esta cargado."
-            );
-
-            return;
-        }
-
-        if (
-            !perfil.personajeCreado ||
-            string.IsNullOrWhiteSpace(
-                perfil.avatarId
-            )
-        )
-        {
-            Debug.LogWarning(
-                "AvatarLoader: el usuario " +
-                "todavia no tiene avatar."
-            );
-
-            return;
         }
 
         CargarAvatar(
-            perfil.avatarId
+            avatarId
         );
     }
 
@@ -98,7 +84,28 @@ public class PlayerAvatarLoader :
             );
 
         if (prefab == null)
+        {
+            Debug.LogError(
+                "No se pudo cargar el avatar: " +
+                avatarId
+            );
+
             return;
+        }
+
+        // Evita duplicados si por alguna razon
+        // el cargador se ejecuta mas de una vez.
+        Transform avatarExistente =
+            transform.Find(
+                "AvatarVisual"
+            );
+
+        if (avatarExistente != null)
+        {
+            Destroy(
+                avatarExistente.gameObject
+            );
+        }
 
         PlayerFacing facing =
             GetComponent<PlayerFacing>();
@@ -107,30 +114,6 @@ public class PlayerAvatarLoader :
             animationController =
                 GetComponent<
                     PlayerAnimationController>();
-
-        Transform visualAnterior =
-            null;
-
-        if (facing != null)
-        {
-            visualAnterior =
-                facing.visual;
-        }
-
-        // Ocultamos el modelo antiguo ANTES
-        // de crear el nuevo.
-        //
-        // Así otros scripts como PlayerNameTag
-        // encuentran únicamente el Animator nuevo.
-        if (
-            visualAnterior != null &&
-            visualAnterior != transform
-        )
-        {
-            visualAnterior
-                .gameObject
-                .SetActive(false);
-        }
 
         GameObject nuevoAvatar =
             Instantiate(
@@ -142,35 +125,20 @@ public class PlayerAvatarLoader :
         nuevoAvatar.name =
             "AvatarVisual";
 
-        // Conservamos exactamente la
-        // configuración del prefab.
-        nuevoAvatar
-            .transform
-            .localPosition =
-                prefab
-                    .transform
-                    .localPosition;
+        nuevoAvatar.transform.localPosition =
+            prefab.transform.localPosition;
 
-        nuevoAvatar
-            .transform
-            .localRotation =
-                prefab
-                    .transform
-                    .localRotation;
+        nuevoAvatar.transform.localRotation =
+            prefab.transform.localRotation;
 
-        nuevoAvatar
-            .transform
-            .localScale =
-                prefab
-                    .transform
-                    .localScale;
+        nuevoAvatar.transform.localScale =
+            prefab.transform.localScale;
 
         Animator nuevoAnimator =
-            nuevoAvatar
-                .GetComponentInChildren<
-                    Animator>(
-                    true
-                );
+            nuevoAvatar.GetComponentInChildren<
+                Animator>(
+                true
+            );
 
         if (nuevoAnimator == null)
         {
@@ -184,32 +152,22 @@ public class PlayerAvatarLoader :
                 nuevoAvatar
             );
 
-            if (
-                visualAnterior != null &&
-                visualAnterior != transform
-            )
-            {
-                visualAnterior
-                    .gameObject
-                    .SetActive(true);
-            }
-
             return;
         }
 
         nuevoAnimator.applyRootMotion =
             false;
 
-        // PlayerFacing ahora gira
-        // el avatar cargado.
+        // El sistema de giro controla
+        // el nuevo modelo.
         if (facing != null)
         {
             facing.visual =
                 nuevoAvatar.transform;
         }
 
-        // PlayerAnimationController ahora
-        // controla el Animator cargado.
+        // El sistema de animaciones controla
+        // el Animator nuevo.
         if (
             animationController != null
         )
@@ -221,18 +179,6 @@ public class PlayerAvatarLoader :
         nuevoAnimator.Rebind();
         nuevoAnimator.Update(0f);
 
-        // Ya comprobamos que el avatar nuevo
-        // funciona. Eliminamos el visual viejo.
-        if (
-            visualAnterior != null &&
-            visualAnterior != transform
-        )
-        {
-            Destroy(
-                visualAnterior.gameObject
-            );
-        }
-
         AvatarCargado =
             true;
 
@@ -240,7 +186,7 @@ public class PlayerAvatarLoader :
             avatarId;
 
         Debug.Log(
-            "AVATAR CARGADO DESDE NAKAMA -> " +
+            "AVATAR DINAMICO CARGADO -> " +
             avatarId
         );
     }
