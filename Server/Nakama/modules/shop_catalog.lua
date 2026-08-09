@@ -8,6 +8,13 @@ local PRODUCTS = {
         name = "Cubo 2x2",
         category = "muebles",
         price = 250
+    },
+
+    {
+        id = "silla_1x1",
+        name = "Silla",
+        category = "muebles",
+        price = 150
     }
 
 }
