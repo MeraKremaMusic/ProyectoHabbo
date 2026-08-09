@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 173732743272240655}
   - component: {fileID: 3579324122619829794}
   - component: {fileID: 8986487716665685901}
+  - component: {fileID: 8343952101442214361}
   m_Layer: 0
   m_Name: Cubo2x2
   m_TagString: Untagged
@@ -128,3 +129,16 @@ MonoBehaviour:
   ancho: 2
   largo: 2
   rotado: 0
+--- !u!114 &8343952101442214361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7994256470457331996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c86d565de69f624cba91ecaa02e830a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FurnitureProductLink
+  productId: cubo_2x2
