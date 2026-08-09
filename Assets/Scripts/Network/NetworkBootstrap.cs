@@ -7,23 +7,70 @@ public static class NetworkBootstrap
     )]
     private static void CrearNetworkManager()
     {
+        GameObject objeto;
+
         if (
-            NakamaConnection.Instance != null
+            NakamaConnection.Instance == null
         )
         {
+            objeto =
+                new GameObject(
+                    "NetworkManager"
+                );
+
+            objeto.AddComponent<
+                NakamaConnection>();
+
+            objeto.AddComponent<
+                NakamaAuthService>();
+
+            objeto.AddComponent<
+                NakamaPlayerProfileService>();
+
+            objeto.AddComponent<
+                GameFlowService>();
+
+            Object.DontDestroyOnLoad(
+                objeto
+            );
+
             return;
         }
 
-        GameObject objeto =
-            new GameObject(
-                "NetworkManager"
-            );
+        // Si el NetworkManager ya existe,
+        // completamos automáticamente
+        // cualquier servicio que falte.
+        objeto =
+            NakamaConnection
+                .Instance
+                .gameObject;
 
-        objeto.AddComponent<
-            NakamaConnection>();
+        if (
+            objeto.GetComponent<
+                NakamaAuthService>() == null
+        )
+        {
+            objeto.AddComponent<
+                NakamaAuthService>();
+        }
 
-        objeto.AddComponent<
-            NakamaAuthService>();
+        if (
+            objeto.GetComponent<
+                NakamaPlayerProfileService>() == null
+        )
+        {
+            objeto.AddComponent<
+                NakamaPlayerProfileService>();
+        }
+
+        if (
+            objeto.GetComponent<
+                GameFlowService>() == null
+        )
+        {
+            objeto.AddComponent<
+                GameFlowService>();
+        }
 
         Object.DontDestroyOnLoad(
             objeto

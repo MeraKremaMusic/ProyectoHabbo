@@ -477,6 +477,33 @@ public class LoginAutoUI : MonoBehaviour
                     .Session
                     .UserId
             );
+
+            if (GameFlowService.Instance != null)
+{
+    GameFlowDestination destino =
+        await GameFlowService
+            .Instance
+            .DeterminarDestinoDespuesDeLogin();
+
+    if (
+        destino ==
+        GameFlowDestination.CrearPersonaje
+    )
+    {
+        MostrarMensaje(
+            "Cuenta lista. Ahora crea tu personaje."
+        );
+    }
+    else if (
+        destino ==
+        GameFlowDestination.HabitacionPrincipal
+    )
+    {
+        MostrarMensaje(
+            "Personaje encontrado. Listo para entrar."
+        );
+    }
+}
         }
     }
 
