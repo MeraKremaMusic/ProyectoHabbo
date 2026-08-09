@@ -40,6 +40,9 @@ public static class NetworkBootstrap
                 FurniturePurchaseService>();
 
             objeto.AddComponent<
+                FurniturePlacementSyncService>();
+
+            objeto.AddComponent<
                 PlayerInventoryService>();
 
             objeto.AddComponent<
@@ -121,6 +124,17 @@ public static class NetworkBootstrap
         {
             objeto.AddComponent<
                 FurniturePurchaseService>();
+        }
+
+
+        if (
+            objeto.GetComponent<
+                FurniturePlacementSyncService>() ==
+            null
+        )
+        {
+            objeto.AddComponent<
+                FurniturePlacementSyncService>();
         }
 
 

@@ -2,7 +2,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 
-public class FurniturePlacementConfirm : MonoBehaviour
+public class FurniturePlacementConfirm :
+    MonoBehaviour
 {
     [Header("Referencias")]
     public FurniturePlacement placement;
@@ -12,27 +13,33 @@ public class FurniturePlacementConfirm : MonoBehaviour
     public GridOccupancy occupancy;
     public FurnitureMove furnitureMove;
 
+
     private GameObject muebleDetectado;
+
     private bool listoParaConfirmar;
+
 
     private void Update()
     {
         if (Mouse.current == null)
             return;
 
+
         if (
             placement == null ||
             !placement.EstaColocando
         )
         {
-            muebleDetectado = null;
-            listoParaConfirmar = false;
+            muebleDetectado =
+                null;
+
+            listoParaConfirmar =
+                false;
 
             return;
         }
 
-        // Detectamos cuándo acaba de aparecer
-        // un mueble nuevo en el cursor.
+
         if (
             muebleDetectado !=
             placement.muebleActual
@@ -47,12 +54,12 @@ public class FurniturePlacementConfirm : MonoBehaviour
             return;
         }
 
-        // Evita que el clic utilizado para
-        // elegir el mueble también lo coloque.
+
         if (!listoParaConfirmar)
         {
             if (
-                !Mouse.current.leftButton
+                !Mouse.current
+                    .leftButton
                     .isPressed
             )
             {
@@ -63,8 +70,7 @@ public class FurniturePlacementConfirm : MonoBehaviour
             return;
         }
 
-        // No colocar muebles al hacer
-        // clic sobre la interfaz.
+
         if (
             EventSystem.current != null &&
             EventSystem.current
@@ -74,8 +80,10 @@ public class FurniturePlacementConfirm : MonoBehaviour
             return;
         }
 
+
         if (
-            Mouse.current.leftButton
+            Mouse.current
+                .leftButton
                 .wasPressedThisFrame
         )
         {
@@ -83,7 +91,8 @@ public class FurniturePlacementConfirm : MonoBehaviour
         }
     }
 
-    private void IntentarColocar()
+
+    private async void IntentarColocar()
     {
         if (
             placement == null ||
@@ -93,89 +102,180 @@ public class FurniturePlacementConfirm : MonoBehaviour
             return;
         }
 
-        placement.RefrescarPosicionDesdeMouse();
 
-        if (!validator.PuedeColocarActual())
+        placement
+            .RefrescarPosicionDesdeMouse();
+
+
+        if (
+            !validator
+                .PuedeColocarActual()
+        )
         {
             Debug.Log(
-                "No se puede colocar " +
-                "el mueble aqui."
+                "No se puede colocar el mueble aqui."
             );
 
             return;
         }
 
+
         if (
-            !placement.ObtenerCasillaAncla(
-                out Vector2Int ancla
-            )
+            !placement
+                .ObtenerCasillaAncla(
+                    out Vector2Int ancla
+                )
         )
         {
             return;
         }
+
 
         GameObject mueble =
             placement.muebleActual;
 
+
         if (mueble == null)
             return;
 
+
         GridObstacle obstaculo =
-            mueble.GetComponent<GridObstacle>();
+            mueble.GetComponent<
+                GridObstacle>();
+
 
         if (obstaculo == null)
         {
             obstaculo =
-                mueble.AddComponent<GridObstacle>();
+                mueble.AddComponent<
+                    GridObstacle>();
         }
+
 
         obstaculo.grid =
             grid;
 
+
         obstaculo.occupancy =
             occupancy;
 
+
         obstaculo.datos =
-            mueble.GetComponent<FurnitureData>();
+            mueble.GetComponent<
+                FurnitureData>();
+
 
         obstaculo.registrarAlIniciar =
             false;
 
+
         obstaculo.enabled =
             true;
 
+
         if (
-            !obstaculo.RegistrarDesdeAncla(
-                ancla
-            )
+            !obstaculo
+                .RegistrarDesdeAncla(
+                    ancla
+                )
         )
         {
             return;
         }
 
+
         if (preview != null)
         {
-            preview.LimpiarPreview();
+            preview
+                .LimpiarPreview();
         }
 
-        // Si estábamos moviendo un mueble
-        // existente, confirmamos su nueva posición.
+
         if (furnitureMove != null)
         {
             furnitureMove
-                .ConfirmarMovimiento(mueble);
+                .ConfirmarMovimiento(
+                    mueble
+                );
         }
 
-        placement.FinalizarColocacion();
+
+        FurnitureInventoryInstance
+            identidad =
+                mueble.GetComponent<
+                    FurnitureInventoryInstance>();
+
+
+        int rotacionY =
+            Mathf.RoundToInt(
+                mueble.transform
+                    .eulerAngles.y
+            );
+
+
+        placement
+            .FinalizarColocacion();
+
 
         muebleDetectado =
             null;
 
+
         listoParaConfirmar =
             false;
+
 
         Debug.Log(
             "Mueble colocado correctamente."
         );
+
+
+        // Los muebles antiguos o de prueba
+        // pueden no tener identidad de Nakama.
+        if (
+            identidad == null ||
+            !identidad.TieneIdentidad
+        )
+        {
+            return;
+        }
+
+
+        FurniturePlacementSyncService
+            sync =
+                FurniturePlacementSyncService
+                    .Instance;
+
+
+        if (sync == null)
+        {
+            Debug.LogWarning(
+                "No se encontro FurniturePlacementSyncService."
+            );
+
+            return;
+        }
+
+
+        FurniturePlacementSyncResultData
+            resultado =
+                await sync
+                    .GuardarColocacion(
+                        identidad.ItemId,
+                        ancla,
+                        rotacionY
+                    );
+
+
+        if (
+            resultado == null ||
+            !resultado.success
+        )
+        {
+            Debug.LogWarning(
+                "El mueble se coloco localmente, " +
+                "pero no pudo guardarse en Nakama."
+            );
+        }
     }
 }
