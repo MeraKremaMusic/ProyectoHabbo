@@ -13,6 +13,7 @@ public sealed class FurnitureInventoryCardUI :
     IPointerClickHandler
 {
     private Image fondo;
+    private Image fondoPreview;
     private Outline borde;
     private RectTransform rect;
 
@@ -260,22 +261,18 @@ public sealed class FurnitureInventoryCardUI :
                 -18f
             );
 
-        Image bg =
+        fondoPreview =
             contenedor.AddComponent<Image>();
 
-        bg.sprite =
+        fondoPreview.sprite =
             UIRoundedSpriteFactory.Obtener(13f);
 
-        bg.type =
+        fondoPreview.type =
             Image.Type.Sliced;
 
-        bg.color =
-            new Color32(
-                21,
-                25,
-                30,
-                255
-            );
+        // El contenedor del furni comparte el color de la tarjeta.
+        fondoPreview.color =
+            colorNormal;
 
         GameObject render =
             CrearObjeto(
@@ -490,21 +487,31 @@ public sealed class FurnitureInventoryCardUI :
 
     private void AplicarEstadoVisual()
     {
+        Color colorActual =
+            seleccionada
+                ? new Color32(
+                    24,
+                    47,
+                    39,
+                    255
+                )
+                : (
+                    hover
+                        ? colorHover
+                        : colorNormal
+                );
+
+        // Fondo exterior e interior siempre iguales.
         if (fondo != null)
         {
             fondo.color =
-                seleccionada
-                    ? new Color32(
-                        24,
-                        47,
-                        39,
-                        255
-                    )
-                    : (
-                        hover
-                            ? colorHover
-                            : colorNormal
-                    );
+                colorActual;
+        }
+
+        if (fondoPreview != null)
+        {
+            fondoPreview.color =
+                colorActual;
         }
 
         if (borde != null)

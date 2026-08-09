@@ -77,6 +77,10 @@ public class FurnitureInventoryAutoUI :
 
     private Coroutine animacionPanel;
 
+    // Tamaño visual general del inventario.
+    private const float EscalaInventario =
+        0.90f;
+
     private void Start()
     {
         inventorySpawner =
@@ -2422,21 +2426,28 @@ public class FurnitureInventoryAutoUI :
         float tiempo =
             0f;
 
+        Vector3 escalaBase =
+            new Vector3(
+                EscalaInventario,
+                EscalaInventario,
+                1f
+            );
+
         Vector3 escalaDesde =
             abrir
                 ? new Vector3(
-                    0.965f,
-                    0.965f,
+                    EscalaInventario * 0.965f,
+                    EscalaInventario * 0.965f,
                     1f
                 )
                 : panelRect.localScale;
 
         Vector3 escalaHasta =
             abrir
-                ? Vector3.one
+                ? escalaBase
                 : new Vector3(
-                    0.975f,
-                    0.975f,
+                    EscalaInventario * 0.975f,
+                    EscalaInventario * 0.975f,
                     1f
                 );
 
@@ -2501,7 +2512,11 @@ public class FurnitureInventoryAutoUI :
         {
             panel.SetActive(false);
             panelRect.localScale =
-                Vector3.one;
+                new Vector3(
+                    EscalaInventario,
+                    EscalaInventario,
+                    1f
+                );
         }
 
         animacionPanel =
