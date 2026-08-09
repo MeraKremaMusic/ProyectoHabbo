@@ -15,6 +15,7 @@ public class FurnitureInventoryAutoUI :
         public string Nombre;
         public string Categoria;
         public string Tamano;
+        public GameObject Prefab;
         public List<FurnitureInventoryItemData>
             Items =
                 new List<FurnitureInventoryItemData>();
@@ -236,6 +237,44 @@ public class FurnitureInventoryAutoUI :
             AlternarInventario
         );
 
+        GameObject iconoMuebles =
+            CrearObjetoUI(
+                "IconoMuebles",
+                objeto.transform
+            );
+
+        RectTransform rIconoMuebles =
+            iconoMuebles.GetComponent<RectTransform>();
+
+        rIconoMuebles.anchorMin =
+            new Vector2(0f, 0.5f);
+
+        rIconoMuebles.anchorMax =
+            new Vector2(0f, 0.5f);
+
+        rIconoMuebles.pivot =
+            new Vector2(0f, 0.5f);
+
+        rIconoMuebles.anchoredPosition =
+            new Vector2(20f, 0f);
+
+        rIconoMuebles.sizeDelta =
+            new Vector2(22f, 22f);
+
+        Image imagenMuebles =
+            iconoMuebles.AddComponent<Image>();
+
+        imagenMuebles.sprite =
+            GameUIIconFactory.Obtener(
+                GameUIIconFactory.Tipo.Mueble
+            );
+
+        imagenMuebles.color =
+            Color.white;
+
+        imagenMuebles.raycastTarget =
+            false;
+
         TMP_Text texto =
             CrearTexto(
                 objeto.transform,
@@ -247,6 +286,9 @@ public class FurnitureInventoryAutoUI :
 
         texto.color =
             Color.white;
+
+        texto.rectTransform.offsetMin =
+            new Vector2(34f, 0f);
     }
 
     private void CrearPanel()
@@ -290,6 +332,46 @@ public class FurnitureInventoryAutoUI :
                 525f
             );
 
+        GameObject sombraPanel =
+            CrearObjetoUI(
+                "SombraPanel",
+                panel.transform
+            );
+
+        sombraPanel.transform.SetAsFirstSibling();
+
+        RectTransform rSombraPanel =
+            sombraPanel.GetComponent<RectTransform>();
+
+        rSombraPanel.anchorMin =
+            Vector2.zero;
+
+        rSombraPanel.anchorMax =
+            Vector2.one;
+
+        rSombraPanel.offsetMin =
+            new Vector2(-8f, -14f);
+
+        rSombraPanel.offsetMax =
+            new Vector2(8f, 2f);
+
+        Image imagenSombraPanel =
+            sombraPanel.AddComponent<Image>();
+
+        imagenSombraPanel.sprite =
+            UIRoundedSpriteFactory.Obtener(
+                GameUITheme.RadioPanel
+            );
+
+        imagenSombraPanel.type =
+            Image.Type.Sliced;
+
+        imagenSombraPanel.color =
+            new Color32(0, 0, 0, 92);
+
+        imagenSombraPanel.raycastTarget =
+            false;
+
         Image fondo =
             panel.AddComponent<Image>();
 
@@ -319,6 +401,7 @@ public class FurnitureInventoryAutoUI :
         CrearCabecera();
         CrearBuscador();
         CrearCategorias();
+        CrearSeparador();
         CrearScroll();
         CrearPie();
     }
@@ -464,17 +547,40 @@ public class FurnitureInventoryAutoUI :
             CerrarInventario
         );
 
-        TMP_Text x =
-            CrearTexto(
-                cerrar.transform,
-                "×",
-                26f,
-                FontStyles.Normal,
-                TextAlignmentOptions.Center
+        GameObject iconoCerrar =
+            CrearObjetoUI(
+                "IconoCerrar",
+                cerrar.transform
             );
 
-        x.color =
+        RectTransform rIconoCerrar =
+            iconoCerrar.GetComponent<RectTransform>();
+
+        rIconoCerrar.anchorMin =
+            new Vector2(0.5f, 0.5f);
+
+        rIconoCerrar.anchorMax =
+            new Vector2(0.5f, 0.5f);
+
+        rIconoCerrar.pivot =
+            new Vector2(0.5f, 0.5f);
+
+        rIconoCerrar.sizeDelta =
+            new Vector2(18f, 18f);
+
+        Image imagenCerrar =
+            iconoCerrar.AddComponent<Image>();
+
+        imagenCerrar.sprite =
+            GameUIIconFactory.Obtener(
+                GameUIIconFactory.Tipo.Cerrar
+            );
+
+        imagenCerrar.color =
             GameUITheme.TextoPrincipal;
+
+        imagenCerrar.raycastTarget =
+            false;
     }
 
     // =====================================================
@@ -542,6 +648,44 @@ public class FurnitureInventoryAutoUI :
         buscador.targetGraphic =
             bg;
 
+        GameObject iconoBuscar =
+            CrearObjetoUI(
+                "IconoBuscar",
+                caja.transform
+            );
+
+        RectTransform rIconoBuscar =
+            iconoBuscar.GetComponent<RectTransform>();
+
+        rIconoBuscar.anchorMin =
+            new Vector2(0f, 0.5f);
+
+        rIconoBuscar.anchorMax =
+            new Vector2(0f, 0.5f);
+
+        rIconoBuscar.pivot =
+            new Vector2(0f, 0.5f);
+
+        rIconoBuscar.anchoredPosition =
+            new Vector2(15f, 0f);
+
+        rIconoBuscar.sizeDelta =
+            new Vector2(18f, 18f);
+
+        Image imagenBuscar =
+            iconoBuscar.AddComponent<Image>();
+
+        imagenBuscar.sprite =
+            GameUIIconFactory.Obtener(
+                GameUIIconFactory.Tipo.Buscar
+            );
+
+        imagenBuscar.color =
+            GameUITheme.TextoSecundario;
+
+        imagenBuscar.raycastTarget =
+            false;
+
         GameObject placeholderObjeto =
             CrearObjetoUI(
                 "Placeholder",
@@ -577,7 +721,7 @@ public class FurnitureInventoryAutoUI :
             Vector2.one;
 
         rPlaceholder.offsetMin =
-            new Vector2(18f, 4f);
+            new Vector2(44f, 4f);
 
         rPlaceholder.offsetMax =
             new Vector2(-18f, -4f);
@@ -614,7 +758,7 @@ public class FurnitureInventoryAutoUI :
             Vector2.one;
 
         rTexto.offsetMin =
-            new Vector2(18f, 4f);
+            new Vector2(44f, 4f);
 
         rTexto.offsetMax =
             new Vector2(-18f, -4f);
@@ -884,6 +1028,47 @@ public class FurnitureInventoryAutoUI :
         }
     }
 
+    private void CrearSeparador()
+    {
+        GameObject objeto =
+            CrearObjetoUI(
+                "SeparadorCategorias",
+                panel.transform
+            );
+
+        RectTransform r =
+            objeto.GetComponent<RectTransform>();
+
+        r.anchorMin =
+            new Vector2(0f, 1f);
+
+        r.anchorMax =
+            new Vector2(1f, 1f);
+
+        r.pivot =
+            new Vector2(0.5f, 1f);
+
+        r.anchoredPosition =
+            new Vector2(0f, -149f);
+
+        r.sizeDelta =
+            new Vector2(-60f, 1f);
+
+        Image linea =
+            objeto.AddComponent<Image>();
+
+        linea.color =
+            new Color32(
+                255,
+                255,
+                255,
+                18
+            );
+
+        linea.raycastTarget =
+            false;
+    }
+
     // =====================================================
     // SCROLL
     // =====================================================
@@ -1013,7 +1198,7 @@ public class FurnitureInventoryAutoUI :
         grid.cellSize =
             new Vector2(
                 220f,
-                238f
+                270f
             );
 
         grid.spacing =
@@ -1335,7 +1520,10 @@ public class FurnitureInventoryAutoUI :
                 ),
 
             Tamano =
-                tamano
+                tamano,
+
+            Prefab =
+                prefab
         };
     }
 
@@ -1375,6 +1563,7 @@ public class FurnitureInventoryAutoUI :
                 grupo.ProductId;
 
             tarjetaUI.Construir(
+                grupo.Prefab,
                 grupo.Nombre,
                 grupo.Categoria,
                 grupo.Tamano,
