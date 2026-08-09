@@ -1,48 +1,35 @@
-local nk = require("nakama")
+local nk =
+    require("nakama")
+
+local catalog =
+    require("shop_catalog")
 
 
--- ==========================================
--- CATALOGO OFICIAL DE LA TIENDA
--- ==========================================
-
-local PRODUCTS = {
-
-    {
-        id = "cubo_2x2",
-        name = "Cubo 2x2",
-        category = "muebles",
-        price = 250
-    }
-
-}
-
-
--- ==========================================
--- UTILIDADES
--- ==========================================
-
-local function require_user(context)
+local function require_user(
+    context
+)
 
     local user_id =
         context.user_id
+
 
     if
         user_id == nil
         or
         user_id == ""
     then
+
         error(
             "Authentication required."
         )
+
     end
 
+
     return user_id
+
 end
 
-
--- ==========================================
--- RPC: OBTENER CATALOGO
--- ==========================================
 
 local function rpc_get_catalog(
     context,
@@ -57,9 +44,10 @@ local function rpc_get_catalog(
     return nk.json_encode({
 
         products =
-            PRODUCTS
+            catalog.get_all()
 
     })
+
 end
 
 
@@ -70,5 +58,5 @@ nk.register_rpc(
 
 
 nk.logger_info(
-    "Shop module loaded."
+    "Shop catalog module loaded."
 )

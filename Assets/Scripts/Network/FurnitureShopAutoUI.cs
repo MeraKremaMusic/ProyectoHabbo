@@ -890,20 +890,85 @@ public class FurnitureShopAutoUI : MonoBehaviour
     }
 
 
-    private void CompraPendiente(
-        FurnitureShopProductData producto)
+   private async void CompraPendiente(
+    FurnitureShopProductData producto)
+{
+    if (producto == null)
+        return;
+
+
+    FurniturePurchaseService
+        purchaseService =
+            FurniturePurchaseService
+                .Instance;
+
+
+    if (purchaseService == null)
     {
-        Debug.Log(
-            "COMPRA SOLICITADA -> " +
-            producto.id
-        );
-
-
         MostrarEstado(
-            "Sistema de compras en el siguiente paso."
+            "Servicio de compras no disponible."
         );
+
+        return;
     }
 
+
+    if (
+        purchaseService
+            .CompraEnCurso
+    )
+    {
+        MostrarEstado(
+            "Procesando compra..."
+        );
+
+        return;
+    }
+
+
+    MostrarEstado(
+        "Comprando " +
+        producto.name +
+        "..."
+    );
+
+
+    FurniturePurchaseResultData
+        resultado =
+            await purchaseService
+                .Comprar(
+                    producto.id
+                );
+
+
+    if (resultado == null)
+    {
+        MostrarEstado(
+            "No se pudo completar la compra."
+        );
+
+        return;
+    }
+
+
+    if (!resultado.success)
+    {
+        MostrarEstado(
+            resultado.message
+        );
+
+        return;
+    }
+
+
+    MostrarEstado(
+        "Compraste " +
+        producto.name +
+        " por " +
+        resultado.price +
+        " monedas."
+    );
+}
 
     // =====================================================
     // SALDO
