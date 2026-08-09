@@ -1,25 +1,31 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class FurnitureRotation : MonoBehaviour
+public class FurnitureRotation :
+    MonoBehaviour
 {
     [Header("Referencias")]
     public FurniturePlacement placement;
+
     public FurnitureSelection selection;
+
 
     private void Awake()
     {
         if (selection == null)
         {
             selection =
-                GetComponent<FurnitureSelection>();
+                GetComponent<
+                    FurnitureSelection>();
         }
     }
+
 
     private void Update()
     {
         if (Keyboard.current == null)
             return;
+
 
         if (
             !Keyboard.current.rKey
@@ -29,17 +35,29 @@ public class FurnitureRotation : MonoBehaviour
             return;
         }
 
+
+        // Si estamos colocando un mueble,
+        // R solamente rota el preview.
+        // La sincronizacion con Nakama
+        // ocurrira cuando confirmemos.
         if (
             placement != null &&
             placement.muebleActual != null
         )
         {
             RotarMuebleActual();
+
             return;
         }
 
+
         RotarSeleccionado();
     }
+
+
+    // =====================================================
+    // ROTAR MUEBLE QUE TODAVIA ESTA EN COLOCACION
+    // =====================================================
 
     public void RotarMuebleActual()
     {
@@ -51,18 +69,28 @@ public class FurnitureRotation : MonoBehaviour
             return;
         }
 
+
         FurnitureData datos =
             placement.muebleActual
-                .GetComponent<FurnitureData>();
+                .GetComponent<
+                    FurnitureData>();
+
 
         if (datos == null)
             return;
 
+
         datos.Rotar();
+
 
         placement
             .RefrescarPosicionDesdeMouse();
     }
+
+
+    // =====================================================
+    // ROTAR MUEBLE YA COLOCADO
+    // =====================================================
 
     public bool RotarSeleccionado()
     {
@@ -74,14 +102,20 @@ public class FurnitureRotation : MonoBehaviour
             return false;
         }
 
+
         GameObject mueble =
             selection.muebleSeleccionado;
 
+
         FurnitureData datos =
-            mueble.GetComponent<FurnitureData>();
+            mueble.GetComponent<
+                FurnitureData>();
+
 
         GridObstacle obstaculo =
-            mueble.GetComponent<GridObstacle>();
+            mueble.GetComponent<
+                GridObstacle>();
+
 
         if (
             datos == null ||
@@ -93,33 +127,56 @@ public class FurnitureRotation : MonoBehaviour
             return false;
         }
 
+
         GridManager grid =
             obstaculo.grid;
+
 
         GridOccupancy occupancy =
             obstaculo.occupancy;
 
+
+        // =================================================
+        // GUARDAR ESTADO ORIGINAL
+        // =================================================
+
         Vector3 posicionOriginal =
             mueble.transform.position;
+
 
         Quaternion rotacionOriginal =
             mueble.transform.rotation;
 
+
         bool rotadoOriginal =
             datos.rotado;
 
-        // Calculamos el ancla ANTES
-        // de cambiar la rotacion.
+
+        // =================================================
+        // OBTENER ANCLA ORIGINAL
+        // =================================================
+
         Vector3 puntoAncla =
             posicionOriginal;
 
+
         puntoAncla.x -=
-            ((datos.AnchoActual - 1) *
-            grid.tamanoCasilla) / 2f;
+            (
+                (datos.AnchoActual - 1)
+                *
+                grid.tamanoCasilla
+            )
+            / 2f;
+
 
         puntoAncla.z -=
-            ((datos.LargoActual - 1) *
-            grid.tamanoCasilla) / 2f;
+            (
+                (datos.LargoActual - 1)
+                *
+                grid.tamanoCasilla
+            )
+            / 2f;
+
 
         if (
             !grid.ObtenerCasilla(
@@ -131,11 +188,21 @@ public class FurnitureRotation : MonoBehaviour
             return false;
         }
 
-        // Liberamos temporalmente
-        // sus casillas actuales.
-        obstaculo.LiberarCasillas();
+
+        // =================================================
+        // LIBERAR CASILLAS ACTUALES TEMPORALMENTE
+        // =================================================
+
+        obstaculo
+            .LiberarCasillas();
+
+
+        // =================================================
+        // ROTAR LOCALMENTE
+        // =================================================
 
         datos.Rotar();
+
 
         bool puedeRotar =
             PuedeOcupar(
@@ -145,29 +212,43 @@ public class FurnitureRotation : MonoBehaviour
                 occupancy
             );
 
+
+        // =================================================
+        // SI NO CABE, VOLVER AL ESTADO ORIGINAL
+        // =================================================
+
         if (!puedeRotar)
         {
-            // Restauramos completamente
-            // si la nueva orientacion no cabe.
             mueble.transform.position =
                 posicionOriginal;
+
 
             mueble.transform.rotation =
                 rotacionOriginal;
 
+
             datos.rotado =
                 rotadoOriginal;
 
-            obstaculo.RegistrarDesdeAncla(
-                ancla
-            );
+
+            obstaculo
+                .RegistrarDesdeAncla(
+                    ancla
+                );
+
 
             Debug.Log(
                 "No hay espacio para rotar el mueble."
             );
 
+
             return false;
         }
+
+
+        // =================================================
+        // RECALCULAR CENTRO SEGUN NUEVAS DIMENSIONES
+        // =================================================
 
         Vector3 centroAncla =
             grid.ObtenerCentroCasilla(
@@ -175,13 +256,24 @@ public class FurnitureRotation : MonoBehaviour
                 posicionOriginal.y
             );
 
+
         float desplazamientoX =
-            ((datos.AnchoActual - 1) *
-            grid.tamanoCasilla) / 2f;
+            (
+                (datos.AnchoActual - 1)
+                *
+                grid.tamanoCasilla
+            )
+            / 2f;
+
 
         float desplazamientoZ =
-            ((datos.LargoActual - 1) *
-            grid.tamanoCasilla) / 2f;
+            (
+                (datos.LargoActual - 1)
+                *
+                grid.tamanoCasilla
+            )
+            / 2f;
+
 
         mueble.transform.position =
             centroAncla +
@@ -191,31 +283,236 @@ public class FurnitureRotation : MonoBehaviour
                 desplazamientoZ
             );
 
-        obstaculo.RegistrarDesdeAncla(
-            ancla
-        );
 
-        // IMPORTANTE:
-        // solo después de comprobar que
-        // la rotación es válida movemos
-        // al personaje sentado.
+        // =================================================
+        // VOLVER A REGISTRAR CASILLAS
+        // =================================================
+
+        if (
+            !obstaculo
+                .RegistrarDesdeAncla(
+                    ancla
+                )
+        )
+        {
+            // Seguridad adicional:
+            // si el registro falla,
+            // restauramos todo.
+
+            mueble.transform.position =
+                posicionOriginal;
+
+
+            mueble.transform.rotation =
+                rotacionOriginal;
+
+
+            datos.rotado =
+                rotadoOriginal;
+
+
+            obstaculo
+                .RegistrarDesdeAncla(
+                    ancla
+                );
+
+
+            return false;
+        }
+
+
+        // =================================================
+        // SI HAY JUGADOR SENTADO, SE ACTUALIZA
+        // =================================================
+
         FurnitureSeat asiento =
-            mueble.GetComponent<FurnitureSeat>();
+            mueble.GetComponent<
+                FurnitureSeat>();
+
 
         if (
             asiento != null &&
             asiento.EstaOcupado
         )
         {
-            asiento.SincronizarOcupante();
+            asiento
+                .SincronizarOcupante();
         }
+
 
         Debug.Log(
             "Mueble rotado correctamente."
         );
 
+
+        // =================================================
+        // SINCRONIZAR CON NAKAMA
+        // =================================================
+
+        SincronizarRotacion(
+            mueble,
+            ancla,
+            posicionOriginal,
+            rotacionOriginal,
+            rotadoOriginal
+        );
+
+
         return true;
     }
+
+
+    // =====================================================
+    // GUARDAR NUEVA ROTACION EN NAKAMA
+    // =====================================================
+
+    private async void SincronizarRotacion(
+        GameObject mueble,
+        Vector2Int ancla,
+        Vector3 posicionOriginal,
+        Quaternion rotacionOriginal,
+        bool rotadoOriginal)
+    {
+        if (mueble == null)
+            return;
+
+
+        FurnitureInventoryInstance
+            identidad =
+                mueble.GetComponent<
+                    FurnitureInventoryInstance>();
+
+
+        // Muebles viejos o de prueba
+        // pueden no tener identidad Nakama.
+        if (
+            identidad == null ||
+            !identidad.TieneIdentidad
+        )
+        {
+            return;
+        }
+
+
+        FurniturePlacementSyncService
+            sync =
+                FurniturePlacementSyncService
+                    .Instance;
+
+
+        if (sync == null)
+        {
+            Debug.LogWarning(
+                "No se encontro FurniturePlacementSyncService."
+            );
+
+            return;
+        }
+
+
+        int rotacionY =
+            Mathf.RoundToInt(
+                mueble.transform
+                    .eulerAngles.y
+            );
+
+
+        FurniturePlacementSyncResultData
+            resultado =
+                await sync
+                    .GuardarColocacion(
+                        identidad.ItemId,
+                        ancla,
+                        rotacionY
+                    );
+
+
+        if (
+            resultado != null &&
+            resultado.success
+        )
+        {
+            Debug.Log(
+                "ROTACION GUARDADA EN NAKAMA -> " +
+                identidad.ItemId +
+                " | rotacion " +
+                resultado.rotation_y
+            );
+
+            return;
+        }
+
+
+        // =================================================
+        // SI FALLA NAKAMA, VOLVER AL ESTADO ORIGINAL
+        // =================================================
+
+        Debug.LogWarning(
+            "No se pudo guardar la rotacion. " +
+            "Se restaurara la orientacion anterior."
+        );
+
+
+        GridObstacle obstaculo =
+            mueble.GetComponent<
+                GridObstacle>();
+
+
+        FurnitureData datos =
+            mueble.GetComponent<
+                FurnitureData>();
+
+
+        if (
+            obstaculo == null ||
+            datos == null
+        )
+        {
+            return;
+        }
+
+
+        obstaculo
+            .LiberarCasillas();
+
+
+        mueble.transform.position =
+            posicionOriginal;
+
+
+        mueble.transform.rotation =
+            rotacionOriginal;
+
+
+        datos.rotado =
+            rotadoOriginal;
+
+
+        obstaculo
+            .RegistrarDesdeAncla(
+                ancla
+            );
+
+
+        FurnitureSeat asiento =
+            mueble.GetComponent<
+                FurnitureSeat>();
+
+
+        if (
+            asiento != null &&
+            asiento.EstaOcupado
+        )
+        {
+            asiento
+                .SincronizarOcupante();
+        }
+    }
+
+
+    // =====================================================
+    // VALIDAR ESPACIO
+    // =====================================================
 
     private bool PuedeOcupar(
         Vector2Int ancla,
@@ -242,6 +539,7 @@ public class FurnitureRotation : MonoBehaviour
                         z
                     );
 
+
                 if (
                     casilla.x < 0 ||
                     casilla.x >= grid.ancho ||
@@ -252,16 +550,19 @@ public class FurnitureRotation : MonoBehaviour
                     return false;
                 }
 
+
                 if (
-                    occupancy.EstaOcupada(
-                        casilla
-                    )
+                    occupancy
+                        .EstaOcupada(
+                            casilla
+                        )
                 )
                 {
                     return false;
                 }
             }
         }
+
 
         return true;
     }
