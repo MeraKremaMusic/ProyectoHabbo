@@ -208,15 +208,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: da36aa60cccae794fa00fef56f4ae0e5, type: 3}
       propertyPath: m_LocalScale.x
-      value: 175
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: da36aa60cccae794fa00fef56f4ae0e5, type: 3}
       propertyPath: m_LocalScale.y
-      value: 175
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: da36aa60cccae794fa00fef56f4ae0e5, type: 3}
       propertyPath: m_LocalScale.z
-      value: 175
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: da36aa60cccae794fa00fef56f4ae0e5, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1311,6 +1311,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1938583698
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1938583700}
+  - component: {fileID: 1938583699}
+  - component: {fileID: 1938583701}
+  m_Layer: 0
+  m_Name: NetworkManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1938583699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1938583698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a09ba8e2a5324a540843bc21641d80b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NakamaConnection
+--- !u!4 &1938583700
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1938583698}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.7467, y: 0.99152, z: -1.10037}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1938583701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1938583698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 631fe0c2c09c92946ab3f514ddb1f93f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NakamaAuthService
 --- !u!1 &1985514555
 GameObject:
   m_ObjectHideFlags: 0
@@ -1550,3 +1607,4 @@ SceneRoots:
   - {fileID: 735926850}
   - {fileID: 932452590}
   - {fileID: 265159689}
+  - {fileID: 1938583700}
