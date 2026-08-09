@@ -9,6 +9,8 @@ public static class NetworkBootstrap
     {
         GameObject objeto;
 
+        // Si todavía no existe NetworkManager,
+        // lo creamos completo automáticamente.
         if (
             NakamaConnection.Instance == null
         )
@@ -30,16 +32,23 @@ public static class NetworkBootstrap
             objeto.AddComponent<
                 GameFlowService>();
 
+            objeto.AddComponent<
+                GameFlowNavigator>();
+
             Object.DontDestroyOnLoad(
                 objeto
+            );
+
+            Debug.Log(
+                "NetworkManager creado automaticamente."
             );
 
             return;
         }
 
-        // Si el NetworkManager ya existe,
-        // completamos automáticamente
-        // cualquier servicio que falte.
+        // Si ya existe NetworkManager,
+        // reutilizamos el mismo objeto
+        // y añadimos cualquier servicio que falte.
         objeto =
             NakamaConnection
                 .Instance
@@ -72,8 +81,21 @@ public static class NetworkBootstrap
                 GameFlowService>();
         }
 
+        if (
+            objeto.GetComponent<
+                GameFlowNavigator>() == null
+        )
+        {
+            objeto.AddComponent<
+                GameFlowNavigator>();
+        }
+
         Object.DontDestroyOnLoad(
             objeto
+        );
+
+        Debug.Log(
+            "NetworkManager verificado y completado."
         );
     }
 }

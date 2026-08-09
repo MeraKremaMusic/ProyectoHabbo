@@ -486,14 +486,33 @@ public class LoginAutoUI : MonoBehaviour
             .DeterminarDestinoDespuesDeLogin();
 
     if (
-        destino ==
-        GameFlowDestination.CrearPersonaje
-    )
+    destino ==
+    GameFlowDestination.CrearPersonaje
+)
+{
+    MostrarMensaje(
+        "Cuenta lista. Ahora crea tu personaje."
+    );
+
+    if (GameFlowNavigator.Instance != null)
     {
-        MostrarMensaje(
-            "Cuenta lista. Ahora crea tu personaje."
-        );
+        GameFlowNavigator
+            .Instance
+            .IrA(destino);
     }
+}
+else if (
+    destino ==
+    GameFlowDestination.HabitacionPrincipal
+)
+{
+    if (GameFlowNavigator.Instance != null)
+    {
+        GameFlowNavigator
+            .Instance
+            .IrA(destino);
+    }
+}
     else if (
         destino ==
         GameFlowDestination.HabitacionPrincipal
