@@ -32,6 +32,23 @@ public class FurnitureInventoryAutoUI :
     private TMP_InputField buscador;
     private Transform contenedorCategorias;
 
+    private Button botonColocarSeleccionado;
+    private Image fondoBotonColocar;
+    private TMP_Text textoSeleccionado;
+
+    private string productIdSeleccionado =
+        null;
+
+    private readonly Dictionary<
+        string,
+        FurnitureInventoryCardUI>
+        tarjetasPorProducto =
+            new Dictionary<
+                string,
+                FurnitureInventoryCardUI>(
+                    StringComparer.OrdinalIgnoreCase
+                );
+
     private PlayerInventoryService
         inventoryService;
 
@@ -323,13 +340,13 @@ public class FurnitureInventoryAutoUI :
         panelRect.anchoredPosition =
             new Vector2(
                 0f,
-                108f
+                82f
             );
 
         panelRect.sizeDelta =
             new Vector2(
-                1240f,
-                525f
+                1120f,
+                640f
             );
 
         GameObject sombraPanel =
@@ -1094,7 +1111,7 @@ public class FurnitureInventoryAutoUI :
         rScroll.offsetMin =
             new Vector2(
                 28f,
-                50f
+                84f
             );
 
         rScroll.offsetMax =
@@ -1197,8 +1214,8 @@ public class FurnitureInventoryAutoUI :
 
         grid.cellSize =
             new Vector2(
-                220f,
-                270f
+                245f,
+                245f
             );
 
         grid.spacing =
@@ -1220,7 +1237,7 @@ public class FurnitureInventoryAutoUI :
                 .FixedColumnCount;
 
         grid.constraintCount =
-            5;
+            4;
 
         ContentSizeFitter fitter =
             contenidoObjeto.AddComponent<
@@ -1256,12 +1273,50 @@ public class FurnitureInventoryAutoUI :
 
     private void CrearPie()
     {
+        GameObject lineaObjeto =
+            CrearObjetoUI(
+                "SeparadorPie",
+                panel.transform
+            );
+
+        RectTransform rLinea =
+            lineaObjeto.GetComponent<RectTransform>();
+
+        rLinea.anchorMin =
+            new Vector2(0f, 0f);
+
+        rLinea.anchorMax =
+            new Vector2(1f, 0f);
+
+        rLinea.pivot =
+            new Vector2(0.5f, 0f);
+
+        rLinea.anchoredPosition =
+            new Vector2(0f, 70f);
+
+        rLinea.sizeDelta =
+            new Vector2(-56f, 1f);
+
+        Image linea =
+            lineaObjeto.AddComponent<Image>();
+
+        linea.color =
+            new Color32(
+                255,
+                255,
+                255,
+                18
+            );
+
+        linea.raycastTarget =
+            false;
+
         textoContador =
             CrearTexto(
                 panel.transform,
                 "0 muebles",
-                13f,
-                FontStyles.Bold,
+                12.5f,
+                FontStyles.Normal,
                 TextAlignmentOptions.Left
             );
 
@@ -1283,22 +1338,58 @@ public class FurnitureInventoryAutoUI :
         rContador.anchoredPosition =
             new Vector2(
                 30f,
-                16f
+                18f
             );
 
         rContador.sizeDelta =
             new Vector2(
-                250f,
-                24f
+                205f,
+                22f
+            );
+
+        textoSeleccionado =
+            CrearTexto(
+                panel.transform,
+                "Selecciona un mueble",
+                13.5f,
+                FontStyles.Bold,
+                TextAlignmentOptions.Left
+            );
+
+        textoSeleccionado.color =
+            GameUITheme.TextoPrincipal;
+
+        RectTransform rSeleccionado =
+            textoSeleccionado.rectTransform;
+
+        rSeleccionado.anchorMin =
+            new Vector2(0f, 0f);
+
+        rSeleccionado.anchorMax =
+            new Vector2(0f, 0f);
+
+        rSeleccionado.pivot =
+            new Vector2(0f, 0f);
+
+        rSeleccionado.anchoredPosition =
+            new Vector2(
+                245f,
+                17f
+            );
+
+        rSeleccionado.sizeDelta =
+            new Vector2(
+                430f,
+                26f
             );
 
         textoEstado =
             CrearTexto(
                 panel.transform,
-                "",
-                13f,
+                "Selecciona una tarjeta para colocarla",
+                12.5f,
                 FontStyles.Normal,
-                TextAlignmentOptions.Right
+                TextAlignmentOptions.Left
             );
 
         textoEstado.color =
@@ -1308,25 +1399,129 @@ public class FurnitureInventoryAutoUI :
             textoEstado.rectTransform;
 
         rEstado.anchorMin =
-            new Vector2(1f, 0f);
+            new Vector2(0f, 0f);
 
         rEstado.anchorMax =
-            new Vector2(1f, 0f);
+            new Vector2(0f, 0f);
 
         rEstado.pivot =
-            new Vector2(1f, 0f);
+            new Vector2(0f, 0f);
 
         rEstado.anchoredPosition =
+            new Vector2(
+                245f,
+                43f
+            );
+
+        rEstado.sizeDelta =
+            new Vector2(
+                430f,
+                22f
+            );
+
+        GameObject botonObjeto =
+            CrearObjetoUI(
+                "BotonColocarSeleccionado",
+                panel.transform
+            );
+
+        RectTransform rBoton =
+            botonObjeto.GetComponent<RectTransform>();
+
+        rBoton.anchorMin =
+            new Vector2(1f, 0f);
+
+        rBoton.anchorMax =
+            new Vector2(1f, 0f);
+
+        rBoton.pivot =
+            new Vector2(1f, 0f);
+
+        rBoton.anchoredPosition =
             new Vector2(
                 -30f,
                 16f
             );
 
-        rEstado.sizeDelta =
+        rBoton.sizeDelta =
             new Vector2(
-                420f,
-                24f
+                188f,
+                46f
             );
+
+        fondoBotonColocar =
+            botonObjeto.AddComponent<Image>();
+
+        fondoBotonColocar.sprite =
+            UIRoundedSpriteFactory.Obtener(
+                GameUITheme.RadioBoton
+            );
+
+        fondoBotonColocar.type =
+            Image.Type.Sliced;
+
+        botonColocarSeleccionado =
+            botonObjeto.AddComponent<Button>();
+
+        botonColocarSeleccionado.targetGraphic =
+            fondoBotonColocar;
+
+        ConfigurarColoresBoton(
+            botonColocarSeleccionado
+        );
+
+        botonColocarSeleccionado.onClick.AddListener(
+            ColocarSeleccionado
+        );
+
+        GameObject iconoObjeto =
+            CrearObjetoUI(
+                "IconoColocar",
+                botonObjeto.transform
+            );
+
+        RectTransform rIcono =
+            iconoObjeto.GetComponent<RectTransform>();
+
+        rIcono.anchorMin =
+            new Vector2(0f, 0.5f);
+
+        rIcono.anchorMax =
+            new Vector2(0f, 0.5f);
+
+        rIcono.pivot =
+            new Vector2(0f, 0.5f);
+
+        rIcono.anchoredPosition =
+            new Vector2(34f, 0f);
+
+        rIcono.sizeDelta =
+            new Vector2(18f, 18f);
+
+        Image icono =
+            iconoObjeto.AddComponent<Image>();
+
+        icono.sprite =
+            GameUIIconFactory.Obtener(
+                GameUIIconFactory.Tipo.Colocar
+            );
+
+        icono.raycastTarget =
+            false;
+
+        TMP_Text textoBoton =
+            CrearTexto(
+                botonObjeto.transform,
+                "COLOCAR",
+                13.5f,
+                FontStyles.Bold,
+                TextAlignmentOptions.Center
+            );
+
+        textoBoton.rectTransform.offsetMin =
+            new Vector2(20f, 0f);
+
+        ActualizarEstadoSeleccion();
     }
 
     // =====================================================
@@ -1336,6 +1531,16 @@ public class FurnitureInventoryAutoUI :
     private void ActualizarInventario()
     {
         gruposActuales.Clear();
+
+        if (
+            productIdSeleccionado != null &&
+            !ProductoSigueDisponible(
+                productIdSeleccionado
+            )
+        )
+        {
+            LimpiarSeleccion();
+        }
 
         if (inventoryService == null)
         {
@@ -1531,6 +1736,8 @@ public class FurnitureInventoryAutoUI :
     {
         LimpiarTarjetas();
 
+        tarjetasPorProducto.Clear();
+
         if (contenido == null)
             return;
 
@@ -1570,12 +1777,27 @@ public class FurnitureInventoryAutoUI :
                 grupo.Items.Count,
                 () =>
                 {
-                    SeleccionarProducto(
+                    SeleccionarTarjeta(
                         productIdGuardado
                     );
                 }
             );
+
+            tarjetasPorProducto[
+                grupo.ProductId
+            ] = tarjetaUI;
+
+            tarjetaUI.EstablecerSeleccionada(
+                string.Equals(
+                    productIdSeleccionado,
+                    grupo.ProductId,
+                    StringComparison
+                        .OrdinalIgnoreCase
+                )
+            );
         }
+
+        ActualizarEstadoSeleccion();
 
         if (
             gruposActuales.Count > 0 &&
@@ -1586,17 +1808,204 @@ public class FurnitureInventoryAutoUI :
                 "No encontramos muebles con ese filtro."
             );
         }
-        else if (visibles > 0)
+        else if (
+            visibles > 0 &&
+            string.IsNullOrWhiteSpace(
+                productIdSeleccionado
+            )
+        )
         {
             MostrarEstado(
-                visibles +
-                (
-                    visibles == 1
-                        ? " tipo visible"
-                        : " tipos visibles"
+                "Selecciona una tarjeta para colocarla"
+            );
+        }
+    }
+
+    private void SeleccionarTarjeta(
+        string productId)
+    {
+        if (string.IsNullOrWhiteSpace(productId))
+            return;
+
+        productIdSeleccionado =
+            productId;
+
+        foreach (
+            KeyValuePair<
+                string,
+                FurnitureInventoryCardUI>
+            par
+            in tarjetasPorProducto
+        )
+        {
+            if (par.Value == null)
+                continue;
+
+            par.Value.EstablecerSeleccionada(
+                string.Equals(
+                    par.Key,
+                    productIdSeleccionado,
+                    StringComparison
+                        .OrdinalIgnoreCase
                 )
             );
         }
+
+        ActualizarEstadoSeleccion();
+    }
+
+    private void LimpiarSeleccion()
+    {
+        productIdSeleccionado =
+            null;
+
+        foreach (
+            FurnitureInventoryCardUI tarjeta
+            in tarjetasPorProducto.Values
+        )
+        {
+            if (tarjeta != null)
+            {
+                tarjeta.EstablecerSeleccionada(
+                    false
+                );
+            }
+        }
+
+        ActualizarEstadoSeleccion();
+    }
+
+    private void ActualizarEstadoSeleccion()
+    {
+        GrupoInventario seleccionado =
+            ObtenerGrupo(
+                productIdSeleccionado
+            );
+
+        bool tieneSeleccion =
+            seleccionado != null &&
+            seleccionado.Items != null &&
+            seleccionado.Items.Count > 0;
+
+        if (botonColocarSeleccionado != null)
+        {
+            botonColocarSeleccionado.interactable =
+                tieneSeleccion;
+        }
+
+        if (fondoBotonColocar != null)
+        {
+            fondoBotonColocar.color =
+                tieneSeleccion
+                    ? GameUITheme.Esmeralda
+                    : new Color32(
+                        64,
+                        70,
+                        78,
+                        255
+                    );
+        }
+
+        if (textoSeleccionado != null)
+        {
+            textoSeleccionado.text =
+                tieneSeleccion
+                    ? "Seleccionado: " +
+                        seleccionado.Nombre
+                    : "Selecciona un mueble";
+
+            textoSeleccionado.color =
+                tieneSeleccion
+                    ? GameUITheme.Esmeralda
+                    : GameUITheme.TextoPrincipal;
+        }
+
+        if (
+            textoEstado != null &&
+            tieneSeleccion
+        )
+        {
+            textoEstado.text =
+                "Pulsa COLOCAR para llevarlo a la sala";
+        }
+    }
+
+    private GrupoInventario ObtenerGrupo(
+        string productId)
+    {
+        if (string.IsNullOrWhiteSpace(productId))
+            return null;
+
+        foreach (
+            GrupoInventario grupo
+            in gruposActuales
+        )
+        {
+            if (
+                grupo != null &&
+                string.Equals(
+                    grupo.ProductId,
+                    productId,
+                    StringComparison
+                        .OrdinalIgnoreCase
+                )
+            )
+            {
+                return grupo;
+            }
+        }
+
+        return null;
+    }
+
+    private bool ProductoSigueDisponible(
+        string productId)
+    {
+        if (
+            string.IsNullOrWhiteSpace(productId) ||
+            inventoryService == null ||
+            inventoryService.Items == null
+        )
+        {
+            return false;
+        }
+
+        foreach (
+            FurnitureInventoryItemData item
+            in inventoryService.Items
+        )
+        {
+            if (item == null)
+                continue;
+
+            if (
+                !string.Equals(
+                    item.product_id,
+                    productId,
+                    StringComparison
+                        .OrdinalIgnoreCase
+                )
+            )
+            {
+                continue;
+            }
+
+            if (item.placed)
+                continue;
+
+            if (
+                ExisteEnEscena(
+                    item.item_id
+                )
+            )
+            {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private bool PasaFiltros(
@@ -1667,7 +2076,27 @@ public class FurnitureInventoryAutoUI :
     // COLOCAR MUEBLE
     // =====================================================
 
-    private void SeleccionarProducto(
+    private void ColocarSeleccionado()
+    {
+        if (
+            string.IsNullOrWhiteSpace(
+                productIdSeleccionado
+            )
+        )
+        {
+            MostrarEstado(
+                "Primero selecciona un mueble."
+            );
+
+            return;
+        }
+
+        ColocarProducto(
+            productIdSeleccionado
+        );
+    }
+
+    private void ColocarProducto(
         string productId)
     {
         if (inventorySpawner == null)
@@ -1731,6 +2160,7 @@ public class FurnitureInventoryAutoUI :
             if (!creado)
                 continue;
 
+            LimpiarSeleccion();
             ActualizarInventario();
             CerrarInventario();
 
@@ -1768,6 +2198,7 @@ public class FurnitureInventoryAutoUI :
         if (panel == null)
             return;
 
+        LimpiarSeleccion();
         ActualizarInventario();
 
         panel.SetActive(true);
@@ -1824,13 +2255,13 @@ public class FurnitureInventoryAutoUI :
         Vector2 posicionAbierta =
             new Vector2(
                 0f,
-                108f
+                82f
             );
 
         Vector2 posicionCerrada =
             new Vector2(
                 0f,
-                -470f
+                -610f
             );
 
         Vector2 desde =

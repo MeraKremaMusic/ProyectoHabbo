@@ -9,17 +9,19 @@ public sealed class FurnitureInventoryCardUI :
     IPointerEnterHandler,
     IPointerExitHandler,
     IPointerDownHandler,
-    IPointerUpHandler
+    IPointerUpHandler,
+    IPointerClickHandler
 {
     private Image fondo;
     private Outline borde;
-    private Button botonColocar;
     private RectTransform rect;
 
     private FurniturePreview3DUI
         preview3D;
 
-    private Action accionColocar;
+    private Action accionSeleccionar;
+
+    private bool seleccionada;
 
     private Color colorNormal;
     private Color colorHover;
@@ -35,10 +37,10 @@ public sealed class FurnitureInventoryCardUI :
         string categoria,
         string tamano,
         int cantidad,
-        Action alColocar)
+        Action alSeleccionar)
     {
-        accionColocar =
-            alColocar;
+        accionSeleccionar =
+            alSeleccionar;
 
         rect =
             GetComponent<RectTransform>();
@@ -95,8 +97,6 @@ public sealed class FurnitureInventoryCardUI :
         CrearMeta(
             tamano
         );
-
-        CrearBoton();
     }
 
     private void Update()
@@ -522,7 +522,7 @@ public sealed class FurnitureInventoryCardUI :
             new Vector2(0.5f, 0f);
 
         r.anchoredPosition =
-            new Vector2(0f, 76f);
+            new Vector2(0f, 42f);
 
         r.sizeDelta =
             new Vector2(-28f, 28f);
@@ -576,147 +576,12 @@ public sealed class FurnitureInventoryCardUI :
             new Vector2(0.5f, 0f);
 
         r.anchoredPosition =
-            new Vector2(0f, 53f);
+            new Vector2(0f, 17f);
 
         r.sizeDelta =
             new Vector2(-28f, 22f);
     }
 
-    private void CrearBoton()
-    {
-        GameObject objeto =
-            CrearObjeto(
-                "BotonColocar",
-                transform
-            );
-
-        RectTransform r =
-            objeto.GetComponent<RectTransform>();
-
-        r.anchorMin =
-            new Vector2(0f, 0f);
-
-        r.anchorMax =
-            new Vector2(1f, 0f);
-
-        r.pivot =
-            new Vector2(0.5f, 0f);
-
-        r.anchoredPosition =
-            new Vector2(0f, 12f);
-
-        r.sizeDelta =
-            new Vector2(-24f, 36f);
-
-        Image bg =
-            objeto.AddComponent<Image>();
-
-        bg.sprite =
-            UIRoundedSpriteFactory.Obtener(
-                GameUITheme.RadioBoton
-            );
-
-        bg.type =
-            Image.Type.Sliced;
-
-        bg.color =
-            GameUITheme.Esmeralda;
-
-        botonColocar =
-            objeto.AddComponent<Button>();
-
-        botonColocar.targetGraphic =
-            bg;
-
-        ColorBlock colores =
-            botonColocar.colors;
-
-        colores.normalColor =
-            Color.white;
-
-        colores.highlightedColor =
-            new Color(
-                0.90f,
-                0.90f,
-                0.90f,
-                1f
-            );
-
-        colores.pressedColor =
-            new Color(
-                0.76f,
-                0.76f,
-                0.76f,
-                1f
-            );
-
-        colores.selectedColor =
-            Color.white;
-
-        botonColocar.colors =
-            colores;
-
-        botonColocar.onClick.AddListener(
-            () =>
-            {
-                accionColocar?.Invoke();
-            }
-        );
-
-        GameObject iconoObjeto =
-            CrearObjeto(
-                "IconoColocar",
-                objeto.transform
-            );
-
-        RectTransform rIcono =
-            iconoObjeto.GetComponent<
-                RectTransform>();
-
-        rIcono.anchorMin =
-            new Vector2(0f, 0.5f);
-
-        rIcono.anchorMax =
-            new Vector2(0f, 0.5f);
-
-        rIcono.pivot =
-            new Vector2(0f, 0.5f);
-
-        rIcono.anchoredPosition =
-            new Vector2(45f, 0f);
-
-        rIcono.sizeDelta =
-            new Vector2(17f, 17f);
-
-        Image icono =
-            iconoObjeto.AddComponent<Image>();
-
-        icono.sprite =
-            GameUIIconFactory.Obtener(
-                GameUIIconFactory.Tipo.Colocar
-            );
-
-        icono.color =
-            Color.white;
-
-        icono.raycastTarget =
-            false;
-
-        TMP_Text texto =
-            CrearTexto(
-                objeto.transform,
-                "COLOCAR",
-                12.5f,
-                FontStyles.Bold,
-                TextAlignmentOptions.Center
-            );
-
-        texto.color =
-            Color.white;
-
-        texto.rectTransform.offsetMin =
-            new Vector2(18f, 0f);
-    }
 
     public void OnPointerEnter(
         PointerEventData eventData)
@@ -725,7 +590,17 @@ public sealed class FurnitureInventoryCardUI :
             true;
 
         if (fondo != null)
-            fondo.color = colorHover;
+        {
+            fondo.color =
+                seleccionada
+                    ? new Color32(
+                        27,
+                        58,
+                        45,
+                        255
+                    )
+                    : colorHover;
+        }
 
         if (borde != null)
         {
@@ -734,11 +609,16 @@ public sealed class FurnitureInventoryCardUI :
                     34,
                     197,
                     94,
-                    110
+                    seleccionada
+                        ? (byte)230
+                        : (byte)110
                 );
 
             borde.effectDistance =
-                new Vector2(2f, -2f);
+                new Vector2(
+                    seleccionada ? 3f : 2f,
+                    seleccionada ? -3f : -2f
+                );
         }
 
         escalaObjetivo =
@@ -757,22 +637,86 @@ public sealed class FurnitureInventoryCardUI :
         hover =
             false;
 
-        if (fondo != null)
-            fondo.color = colorNormal;
-
-        if (borde != null)
-        {
-            borde.effectColor =
-                GameUITheme.BordeSuave;
-
-            borde.effectDistance =
-                new Vector2(1f, -1f);
-        }
+        AplicarEstadoVisual();
 
         escalaObjetivo =
             Vector3.one;
 
         preview3D?.DesactivarHover();
+    }
+
+    public void EstablecerSeleccionada(
+        bool valor)
+    {
+        seleccionada =
+            valor;
+
+        AplicarEstadoVisual();
+    }
+
+    public void OnPointerClick(
+        PointerEventData eventData)
+    {
+        if (
+            eventData.button !=
+            PointerEventData.InputButton.Left
+        )
+        {
+            return;
+        }
+
+        accionSeleccionar?.Invoke();
+    }
+
+    private void AplicarEstadoVisual()
+    {
+        if (fondo != null)
+        {
+            fondo.color =
+                seleccionada
+                    ? new Color32(
+                        25,
+                        52,
+                        42,
+                        255
+                    )
+                    : (
+                        hover
+                            ? colorHover
+                            : colorNormal
+                    );
+        }
+
+        if (borde != null)
+        {
+            borde.effectColor =
+                seleccionada
+                    ? new Color32(
+                        34,
+                        197,
+                        94,
+                        230
+                    )
+                    : (
+                        hover
+                            ? new Color32(
+                                34,
+                                197,
+                                94,
+                                110
+                            )
+                            : GameUITheme.BordeSuave
+                    );
+
+            borde.effectDistance =
+                seleccionada
+                    ? new Vector2(3f, -3f)
+                    : (
+                        hover
+                            ? new Vector2(2f, -2f)
+                            : new Vector2(1f, -1f)
+                    );
+        }
     }
 
     public void OnPointerDown(
