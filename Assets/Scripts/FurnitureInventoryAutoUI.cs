@@ -1409,10 +1409,12 @@ public class FurnitureInventoryAutoUI :
 
         // Cinco muebles visibles por fila.
         // El ContentSizeFitter mantiene tantas filas como sean necesarias.
+        // Tarjetas completamente cuadradas.
+        // Se mantienen 5 muebles por fila y scroll vertical ilimitado.
         grid.cellSize =
             new Vector2(
                 142f,
-                190f
+                142f
             );
 
         grid.spacing =
