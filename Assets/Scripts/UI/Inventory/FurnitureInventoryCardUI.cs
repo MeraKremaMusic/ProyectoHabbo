@@ -73,16 +73,18 @@ public sealed class FurnitureInventoryCardUI :
         borde.effectDistance =
             new Vector2(1f, -1f);
 
-        CrearCantidad(
-            cantidad
-        );
-
         CrearPreview(
             prefab
         );
 
         CrearNombre(
             nombre
+        );
+
+        // La cantidad se crea al final para que siempre quede
+        // visualmente por encima del preview y de la tarjeta.
+        CrearCantidad(
+            cantidad
         );
 
         AplicarEstadoVisual();
@@ -156,6 +158,9 @@ public sealed class FurnitureInventoryCardUI :
                 "Cantidad",
                 transform
             );
+
+        // Garantiza que el badge xN se dibuje delante de todo.
+        objeto.transform.SetAsLastSibling();
 
         RectTransform r =
             objeto.GetComponent<RectTransform>();

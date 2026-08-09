@@ -390,7 +390,7 @@ public class FurnitureInventoryAutoUI :
                 18,
                 21,
                 26,
-                250
+                255
             );
 
         Outline borde =
